@@ -71,6 +71,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <p className="text-sm text-muted-foreground">Your everyday Indian grocery store, halal butcher, and quick-service restaurant.</p>
             </div>
             <div>
+              <h3 className="font-semibold mb-4">Explore</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link href="/about" className="hover:text-primary">Our Story</Link></li>
+                <li><Link href="/location" className="hover:text-primary">Locations & Hours</Link></li>
+                <li><Link href="/gallery" className="hover:text-primary">Photo Gallery</Link></li>
+                <li><Link href="/reviews" className="hover:text-primary">Customer Reviews</Link></li>
+                <li><Link href="/contact" className="hover:text-primary">Contact Us</Link></li>
+              </ul>
+            </div>
+            <div>
               <h3 className="font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/menu" className="hover:text-primary">Order Food</Link></li>

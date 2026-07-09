@@ -48,6 +48,11 @@ export default function Home() {
                 <Link href="/grocery-halal">Shop Groceries</Link>
               </Button>
             </div>
+            <div className="mt-8">
+              <Link href="/about" className="text-sm font-medium text-primary hover:underline">
+                Discover Our Story &rarr;
+              </Link>
+            </div>
           </div>
           <div className="relative hidden md:block">
             <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />

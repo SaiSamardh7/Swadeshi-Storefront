@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "sqJgvekPNQR5ERM82niKB"
@@ -102,3 +101,15 @@ id = "o1hv2TGyLS4zs8e_JpAJA"
 uri = "file://artifacts/swadeshi/public/images/soup.png"
 type = "image"
 title = "Tomato coriander soup"
+
+[[outputs]]
+id = "xwIFOdwI56ZtuEenVZ6-t"
+uri = "file://artifacts/swadeshi/public/images/grocery-aisle.jpg"
+type = "image"
+title = "clean modern indian grocery store aisle with shelves of spices and lentils"
+
+[[outputs]]
+id = "Pk8WjFMF6hyK96U2SFJRq"
+uri = "file://artifacts/swadeshi/public/images/halal-case.jpg"
+type = "image"
+title = "clean butcher case with fresh meat"
