@@ -1,0 +1,104 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "sqJgvekPNQR5ERM82niKB"
+uri = "file://artifacts/swadeshi/public/images/biryani.png"
+type = "image"
+title = "Copper handi of chicken biryani"
+
+[[generated]]
+id = "XBJelwKZwOWtBNKj9Sk1w"
+uri = "file://artifacts/swadeshi/public/images/dosa.png"
+type = "image"
+title = "Crispy masala dosa with chutneys"
+
+[[generated]]
+id = "MRoRWi7tMfLYC9ssNLOvi"
+uri = "file://artifacts/swadeshi/public/images/paneer.png"
+type = "image"
+title = "Paneer butter masala in bowl"
+
+[[generated]]
+id = "8RAdHjIN5_gJcRWXJIQGo"
+uri = "file://artifacts/swadeshi/public/images/lassi.png"
+type = "image"
+title = "Mango lassi in a glass"
+
+[[generated]]
+id = "IyH6_iIf_OANjs8cUHkZH"
+uri = "file://artifacts/swadeshi/public/images/sweets.png"
+type = "image"
+title = "Fresh Indian sweets gulab jamun"
+
+[[generated]]
+id = "BCi9doxSR5cB2env1VZsq"
+uri = "file://artifacts/swadeshi/public/images/catering-hero.png"
+type = "image"
+title = "Catering spread of Indian food"
+
+[[generated]]
+id = "tjEY9IBH5YWX6NZX3a6-B"
+uri = "file://artifacts/swadeshi/public/images/logo.png"
+type = "image"
+title = "Orange lotus over green leaves"
+
+[[generated]]
+id = "eeBKxebqGo8W523Zo96lJ"
+uri = "file://artifacts/swadeshi/public/images/grocery-hero.png"
+type = "image"
+title = "Grocery fresh vegetables and spices"
+
+[[generated]]
+id = "pHwGxX4s61RH7V6SGay4m"
+uri = "file://artifacts/swadeshi/public/images/halal-hero.png"
+type = "image"
+title = "Clean halal butcher meat case"
+
+[[generated]]
+id = "dpG9f09UA450M3yxmf9xI"
+uri = "file://artifacts/swadeshi/public/images/storefront.png"
+type = "image"
+title = "Indian grocery storefront"
+
+[[generated]]
+id = "-ukm-vBfdaWIbidGuE_D8"
+uri = "file://artifacts/swadeshi/public/images/idli.png"
+type = "image"
+title = "Steamed idli with sambar"
+
+[[generated]]
+id = "qoa8Bkhv6nkWUMDX8aAbH"
+uri = "file://artifacts/swadeshi/public/images/panipuri.png"
+type = "image"
+title = "Crispy panipuri golgappa"
+
+[[generated]]
+id = "7wqdoy4QANjRJaSo2eGFx"
+uri = "file://artifacts/swadeshi/public/images/samosa.png"
+type = "image"
+title = "Crispy samosas with chutney"
+
+[[generated]]
+id = "CpF2LLZlzmf1VEJL5nXat"
+uri = "file://artifacts/swadeshi/public/images/naan.png"
+type = "image"
+title = "Garlic butter naan"
+
+[[generated]]
+id = "Ws8pqvO-sOdSHU3Xr3r_Y"
+uri = "file://artifacts/swadeshi/public/images/thali.png"
+type = "image"
+title = "Indian veg thali"
+
+[[generated]]
+id = "8g2T77HbcTlo730ZigT_3"
+uri = "file://artifacts/swadeshi/public/images/wrap.png"
+type = "image"
+title = "Chicken tikka wrap"
+
+[[generated]]
+id = "o1hv2TGyLS4zs8e_JpAJA"
+uri = "file://artifacts/swadeshi/public/images/soup.png"
+type = "image"
+title = "Tomato coriander soup"
