@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { ShoppingCart, Heart, User, Menu, Home, Grid, Phone, MapPin } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { Button } from "@/components/ui/button";
+import swadeshiLogo from "@/assets/swadeshi-logo.png";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -19,9 +20,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </Button>
             
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <img src="/images/logo.png" alt="Swadeshi Logo" className="h-8 w-8 object-contain" />
-              <span className="text-xl font-bold text-foreground tracking-tight">Swadeshi</span>
+            <Link href="/" className="flex items-center">
+              <img src={swadeshiLogo} alt="Swadeshi - Grocery, Halal Meat, Indian Kitchen" className="h-11 w-auto object-contain" />
             </Link>
 
             {/* Desktop Nav */}
@@ -65,9 +65,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <Link href="/" className="flex items-center gap-2 mb-4">
-                <img src="/images/logo.png" alt="Swadeshi Logo" className="h-6 w-6 object-contain grayscale" />
-                <span className="text-lg font-bold">Swadeshi</span>
+              <Link href="/" className="flex items-center mb-4">
+                <img src={swadeshiLogo} alt="Swadeshi Logo" className="h-10 w-auto object-contain" />
               </Link>
               <p className="text-sm text-muted-foreground">Your everyday Indian grocery store, halal butcher, and quick-service restaurant.</p>
             </div>
@@ -82,9 +81,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div>
               <h3 className="font-semibold mb-4">Contact</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>123 Market Street, NY 10001</li>
-                <li>+1 (555) 123-4567</li>
-                <li>hello@swadeshi.com</li>
+                <li>Frisco, TX</li>
+                <li>+1 (469) 294-3500</li>
+                <li>Spfrisco@gmail.com</li>
               </ul>
             </div>
             <div>
