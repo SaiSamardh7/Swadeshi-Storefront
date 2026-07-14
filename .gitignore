@@ -47,3 +47,6 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# raw image masters (54MB) — compressed versions live in public/images
+artifacts/swadeshi/media-sources/

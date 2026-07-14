@@ -1,15 +1,14 @@
-import React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Phone, Mail, MapPin, Clock, CheckCircle } from "lucide-react";
+import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { BUSINESS } from "@/lib/business";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -20,8 +19,6 @@ const formSchema = z.object({
 });
 
 export default function Contact() {
-  const [submitted, setSubmitted] = React.useState(false);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -34,9 +31,17 @@ export default function Contact() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    setSubmitted(true);
-    form.reset();
+    const subject = `Website inquiry: ${values.reason}`;
+    const body = [
+      `Name: ${values.name}`,
+      `Phone: ${values.phone}`,
+      `Email: ${values.email}`,
+      `Topic: ${values.reason}`,
+      "",
+      values.message,
+    ].join("\n");
+
+    window.location.href = `mailto:${BUSINESS.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
 
   return (
@@ -64,7 +69,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <h3 className="font-semibold mb-1">Address</h3>
-                  <p className="text-muted-foreground text-sm">Frisco, TX<br/>(Flagship Location)</p>
+                  <p className="text-muted-foreground text-sm">{BUSINESS.address}<br/>(Flagship Location)</p>
                 </div>
               </div>
               
@@ -98,7 +103,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <h3 className="font-semibold mb-1">Hours</h3>
-                  <p className="text-muted-foreground text-sm">Mon-Sat: 9am - 10pm<br/>Sun: 10am - 9pm</p>
+                  <p className="text-muted-foreground text-sm">{BUSINESS.hours.join(" · ")}</p>
                 </div>
               </div>
             </div>
@@ -108,7 +113,7 @@ export default function Contact() {
                 <a href="tel:+14692943500">Call Now</a>
               </Button>
               <Button variant="outline" className="w-full rounded-full" asChild>
-                <a href="https://www.google.com/maps?q=Frisco,TX" target="_blank" rel="noopener noreferrer">Get Directions</a>
+                <a href={BUSINESS.mapsUrl} target="_blank" rel="noopener noreferrer">Get Directions</a>
               </Button>
             </div>
           </div>
@@ -119,17 +124,7 @@ export default function Contact() {
               <CardContent className="p-6 md:p-8">
                 <h2 className="text-2xl font-bold mb-6">Send a Message</h2>
                 
-                {submitted ? (
-                  <Alert className="bg-green-50 border-green-200">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <AlertTitle className="text-green-800">Message Sent!</AlertTitle>
-                    <AlertDescription className="text-green-700">
-                      Thank you for contacting Swadeshi. We have received your message and will respond as soon as possible.
-                    </AlertDescription>
-                    <Button className="mt-4" variant="outline" onClick={() => setSubmitted(false)}>Send Another Message</Button>
-                  </Alert>
-                ) : (
-                  <Form {...form}>
+                <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={form.control} name="name" render={({ field }) => (
@@ -188,11 +183,13 @@ export default function Contact() {
                       )} />
 
                       <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white h-12 text-lg rounded-xl mt-4">
-                        Send Message
+                        Open Email Draft
                       </Button>
+                      <p className="text-xs text-muted-foreground text-center">
+                        This opens your email app. The website does not store or send your details itself.
+                      </p>
                     </form>
                   </Form>
-                )}
               </CardContent>
             </Card>
           </div>

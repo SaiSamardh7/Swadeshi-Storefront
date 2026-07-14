@@ -1,0 +1,19 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - corepack enable
+        - pnpm config set store-dir .pnpm-store
+        - pnpm install --frozen-lockfile
+    build:
+      commands:
+        - pnpm --filter @workspace/swadeshi typecheck
+        - pnpm --filter @workspace/swadeshi build
+  artifacts:
+    baseDirectory: artifacts/swadeshi/dist/public
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - .pnpm-store/**/*

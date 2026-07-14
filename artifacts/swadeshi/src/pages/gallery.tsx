@@ -1,15 +1,15 @@
-import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { BUSINESS } from "@/lib/business";
 
 const GALLERY_IMAGES = [
-  { src: "/images/storefront.png", alt: "Swadeshi Storefront Exterior", caption: "Welcome to Swadeshi" },
+  { src: "/images/storefront.jpg", alt: "Swadeshi Storefront Exterior", caption: "Welcome to Swadeshi" },
   { src: "/images/grocery-aisle.jpg", alt: "Grocery Aisles", caption: "Premium Quality Groceries" },
   { src: "/images/halal-case.jpg", alt: "Halal Meat Case", caption: "Fresh Halal Butcher Shop" },
-  { src: "/images/catering-hero.png", alt: "Catering Spread", caption: "Authentic Catering Spreads" },
-  { src: "/images/biryani.png", alt: "Chicken Biryani", caption: "Signature Chicken Biryani" },
-  { src: "/images/paneer.png", alt: "Paneer Butter Masala", caption: "Rich Paneer Curries" },
-  { src: "/images/sweets.png", alt: "Traditional Sweets", caption: "Freshly Made Sweets" },
-  { src: "/images/dosa.png", alt: "Masala Dosa", caption: "Crispy South Indian Dosas" },
+  { src: "/images/catering-hero.jpg", alt: "Catering Spread", caption: "Authentic Catering Spreads" },
+  { src: "/images/biryani.jpg", alt: "Chicken Biryani", caption: "Signature Chicken Biryani" },
+  { src: "/images/paneer.jpg", alt: "Paneer Butter Masala", caption: "Rich Paneer Curries" },
+  { src: "/images/sweets.jpg", alt: "Traditional Sweets", caption: "Freshly Made Sweets" },
+  { src: "/images/dosa.jpg", alt: "Masala Dosa", caption: "Crispy South Indian Dosas" },
 ];
 
 export default function Gallery() {
@@ -49,7 +49,7 @@ export default function Gallery() {
           Order our delicious, authentic Indian cuisine online for pickup or delivery.
         </p>
         <Button size="lg" className="rounded-full px-8 bg-primary hover:bg-primary/90 text-white" asChild>
-          <Link href="/menu">Order Online Now</Link>
+          <a href={BUSINESS.orderUrl} target="_blank" rel="noopener noreferrer">Order Online Now</a>
         </Button>
       </div>
     </div>

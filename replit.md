@@ -1,6 +1,6 @@
-# [Project name]
+# Swadeshi Storefront
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Customer-facing website for Swadeshi Plaza in Frisco: restaurant menu, grocery and halal-meat information, catering inquiries, and store details.
 
 ## Run & Operate
 
@@ -22,15 +22,26 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/swadeshi` — Vite/React storefront; routes are registered in `src/App.tsx`
+- `artifacts/swadeshi/src/data/fullmenu.ts` — source of truth for displayed menu items and prices
+- `artifacts/swadeshi/src/lib/business.ts` — source of truth for address, hours, contact, maps, and ordering links
+- `artifacts/swadeshi/src/index.css` — Tailwind theme and global styles
+- `artifacts/api-server` — Phase 2 Express API scaffold
+- `lib/db/src/schema` — Phase 2 database schema
+- `lib/api-spec/openapi.yaml` — API contract used to generate `lib/api-client-react` and `lib/api-zod`
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The storefront currently reads local typed data; the API, database, and generated clients are retained for the planned Phase 2 backend.
+- Business facts are centralized in `src/lib/business.ts` so pages do not drift on phone, address, hours, or order URL.
+- Menu prices come from `src/data/fullmenu.ts`; promotional strips must derive from that dataset rather than duplicate prices.
+- shadcn components are kept only when reachable; regenerate a removed primitive with the shadcn CLI when a feature needs it.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Browse and search the restaurant menu, including vegetarian filtering.
+- Review grocery, halal meat, catering, gallery, reviews, location, and contact information.
+- Start an order through the restaurant's external POS ordering page.
 
 ## User preferences
 
@@ -38,7 +49,9 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Use pnpm only; the root `preinstall` rejects npm and Yarn.
+- Run `pnpm run typecheck` before `pnpm run build` or submitting changes.
+- Menu vegetarian flags were inferred during extraction and should be owner-verified before being presented as authoritative dietary guidance.
 
 ## Pointers
 

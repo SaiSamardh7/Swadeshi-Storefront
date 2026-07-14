@@ -1,151 +1,99 @@
-import React from 'react';
-import { ShoppingCart, CheckCircle, Package } from "lucide-react";
+import { CheckCircle, MapPin, Package, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useCart } from "@/hooks/use-cart";
+import { BUSINESS } from "@/lib/business";
 
-const GROCERY_CATEGORIES = [
-  { id: "g1", name: "Premium Basmati Rice (10lb)", price: 18.99, img: "/images/grocery-hero.png" },
-  { id: "g2", name: "Aashirvaad Atta (20lb)", price: 14.99, img: "/images/grocery-hero.png" },
-  { id: "g3", name: "Toor Dal (4lb)", price: 8.99, img: "/images/grocery-hero.png" },
-  { id: "g4", name: "MDH Garam Masala", price: 3.49, img: "/images/grocery-hero.png" },
-  { id: "g5", name: "Fresh Okra (per lb)", price: 2.99, img: "/images/grocery-hero.png" },
-  { id: "g6", name: "Paneer Block", price: 7.99, img: "/images/grocery-hero.png" },
+const GROCERY_HIGHLIGHTS = [
+  "Rice, atta, and lentils",
+  "Spices and pantry staples",
+  "Fresh produce",
+  "Dairy, paneer, and frozen foods",
 ];
 
-const HALAL_CATEGORIES = [
-  { id: "h1", name: "Chicken Breast (Boneless)", price: 5.99, img: "/images/halal-hero.png", unit: "per lb" },
-  { id: "h2", name: "Whole Chicken (Cut)", price: 3.49, img: "/images/halal-hero.png", unit: "per lb" },
-  { id: "h3", name: "Goat Meat (Mixed Cuts)", price: 9.99, img: "/images/halal-hero.png", unit: "per lb" },
-  { id: "h4", name: "Lamb Chops", price: 11.99, img: "/images/halal-hero.png", unit: "per lb" },
-  { id: "h5", name: "Ground Beef", price: 6.99, img: "/images/halal-hero.png", unit: "per lb" },
-  { id: "h6", name: "Beef Stew Meat", price: 7.49, img: "/images/halal-hero.png", unit: "per lb" },
+const HALAL_HIGHLIGHTS = [
+  "Chicken",
+  "Goat and lamb",
+  "Beef",
+  "Fresh cuts prepared in store",
 ];
 
 export default function GroceryHalal() {
-  const { addToCart } = useCart();
-
   return (
     <div className="animate-in fade-in duration-500 pb-10">
-      {/* Split Hero */}
       <div className="grid md:grid-cols-2 min-h-[40vh] md:min-h-[60vh]">
-        <div className="relative group overflow-hidden bg-orange-900">
-          <img src="/images/grocery-hero.png" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" alt="Grocery" />
+        <section className="relative group overflow-hidden bg-orange-900">
+          <img src="/images/grocery-hero.jpg" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" alt="Shelves of Indian grocery essentials" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
           <div className="absolute inset-0 flex flex-col justify-end p-8 text-white">
             <h1 className="text-4xl font-bold mb-2">Desi Groceries</h1>
-            <p className="text-lg opacity-90 mb-6">Spices, lentils, rice, and daily fresh vegetables.</p>
+            <p className="text-lg opacity-90 mb-6">Spices, lentils, rice, produce, and everyday essentials.</p>
             <div>
-              <Button className="bg-primary hover:bg-primary/90 text-white rounded-full">Shop Groceries</Button>
+              <Button className="bg-primary hover:bg-primary/90 text-white rounded-full" asChild>
+                <a href={BUSINESS.groceryOrderUrl} target="_blank" rel="noopener noreferrer">Order Groceries</a>
+              </Button>
             </div>
           </div>
-        </div>
-        
-        <div className="relative group overflow-hidden bg-green-900">
-          <img src="/images/halal-hero.png" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" alt="Halal Meat" />
+        </section>
+
+        <section className="relative group overflow-hidden bg-green-900">
+          <img src="/images/halal-hero.jpg" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" alt="Fresh halal meat counter" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-          <div className="absolute top-4 right-4 bg-white text-secondary px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
-            <CheckCircle className="w-3 h-3" /> Halal Certified
-          </div>
           <div className="absolute inset-0 flex flex-col justify-end p-8 text-white">
-            <h1 className="text-4xl font-bold mb-2">Fresh Halal Meat</h1>
-            <p className="text-lg opacity-90 mb-6">Premium cuts of chicken, goat, lamb, and beef.</p>
+            <h2 className="text-4xl font-bold mb-2">Fresh Halal Meat</h2>
+            <p className="text-lg opacity-90 mb-6">Chicken, goat, lamb, and beef selections prepared in store.</p>
             <div>
-              <Button className="bg-secondary hover:bg-secondary/90 text-white rounded-full">Shop Halal Meat</Button>
+              <Button className="bg-secondary hover:bg-secondary/90 text-white rounded-full" asChild>
+                <a href={BUSINESS.phoneTel}>Call for Availability</a>
+              </Button>
             </div>
           </div>
-        </div>
+        </section>
       </div>
 
-      <div className="container mx-auto px-4 py-16 space-y-16">
-        
-        {/* Grocery Section */}
-        <section>
-          <div className="flex items-end justify-between mb-8 pb-4 border-b-2 border-primary/20 relative">
-            <h2 className="text-3xl font-bold">Everyday Grocery</h2>
-            <div className="absolute bottom-0 left-0 h-1 w-24 bg-primary" />
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {GROCERY_CATEGORIES.map(item => (
-              <Card key={item.id} className="border-none shadow-sm hover:shadow-md transition-shadow group overflow-hidden flex flex-col">
-                <div className="h-32 bg-muted relative">
-                  <img src={item.img} className="w-full h-full object-cover group-hover:scale-105 transition-transform" alt={item.name} />
-                </div>
-                <CardContent className="p-4 flex flex-col flex-1">
-                  <h3 className="font-semibold text-sm leading-tight mb-2 flex-1">{item.name}</h3>
-                  <div className="flex items-center justify-between mt-auto">
-                    <span className="font-bold text-primary">${item.price.toFixed(2)}</span>
-                    <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full text-primary hover:bg-primary/10" onClick={() => addToCart(item)}>
-                      <ShoppingCart className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Halal Meat Section */}
-        <section>
-          <div className="flex items-end justify-between mb-8 pb-4 border-b-2 border-secondary/20 relative">
-            <h2 className="text-3xl font-bold">Halal Butcher</h2>
-            <div className="absolute bottom-0 left-0 h-1 w-24 bg-secondary" />
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {HALAL_CATEGORIES.map(item => (
-              <Card key={item.id} className="border-none shadow-sm hover:shadow-md transition-shadow group overflow-hidden flex flex-col">
-                <div className="h-32 bg-muted relative">
-                  <img src={item.img} className="w-full h-full object-cover group-hover:scale-105 transition-transform" alt={item.name} />
-                </div>
-                <CardContent className="p-4 flex flex-col flex-1">
-                  <h3 className="font-semibold text-sm leading-tight mb-1 flex-1">{item.name}</h3>
-                  <p className="text-xs text-muted-foreground mb-2">{item.unit}</p>
-                  <div className="flex items-center justify-between mt-auto">
-                    <span className="font-bold text-secondary">${item.price.toFixed(2)}</span>
-                    <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full text-secondary hover:bg-secondary/10" onClick={() => addToCart(item)}>
-                      <ShoppingCart className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Benefits Row */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 py-8 border-y">
-          {[
-            "Fresh Selection Daily",
-            "100% Halal Certified",
-            "Quality Guaranteed",
-            "Local Home Delivery",
-            "Curbside Pickup"
-          ].map((benefit, i) => (
-            <div key={i} className="flex flex-col items-center text-center gap-2">
-              <div className="w-12 h-12 rounded-full bg-accent text-primary flex items-center justify-center">
-                <CheckCircle className="w-6 h-6" />
-              </div>
-              <span className="text-sm font-semibold">{benefit}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Info Blocks */}
+      <div className="container mx-auto px-4 py-16 space-y-12">
         <div className="grid md:grid-cols-2 gap-8">
-          <Card className="bg-muted border-none shadow-none">
-            <CardContent className="p-8 flex items-center gap-6">
-              <Package className="w-16 h-16 text-primary" />
-              <div>
-                <h3 className="text-xl font-bold mb-2">Curbside Pickup</h3>
-                <p className="text-muted-foreground text-sm">Order your groceries and meat online. We'll pack everything fresh and bring it directly to your car when you arrive.</p>
-              </div>
+          <Card className="border-none shadow-sm">
+            <CardContent className="p-8">
+              <ShoppingBag className="w-10 h-10 text-primary mb-4" />
+              <h2 className="text-2xl font-bold mb-4">Grocery Selection</h2>
+              <ul className="space-y-3 text-muted-foreground">
+                {GROCERY_HIGHLIGHTS.map((item) => (
+                  <li key={item} className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-primary shrink-0" /> {item}
+                  </li>
+                ))}
+              </ul>
             </CardContent>
           </Card>
-          <div className="rounded-xl overflow-hidden shadow-md">
-            <img src="/images/storefront.png" className="w-full h-full object-cover" alt="Store Location" />
-          </div>
+
+          <Card className="border-none shadow-sm">
+            <CardContent className="p-8">
+              <Package className="w-10 h-10 text-secondary mb-4" />
+              <h2 className="text-2xl font-bold mb-4">Halal Butcher</h2>
+              <ul className="space-y-3 text-muted-foreground">
+                {HALAL_HIGHLIGHTS.map((item) => (
+                  <li key={item} className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-secondary shrink-0" /> {item}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
         </div>
 
+        <Card className="bg-muted border-none shadow-none">
+          <CardContent className="p-8 flex flex-col md:flex-row items-start md:items-center gap-6">
+            <MapPin className="w-12 h-12 text-primary shrink-0" />
+            <div className="flex-1">
+              <h2 className="text-xl font-bold mb-2">Visit the Frisco Store</h2>
+              <p className="text-muted-foreground text-sm">Inventory and pricing change. Visit or call for current in-store availability.</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button variant="outline" asChild><a href={BUSINESS.phoneTel}>Call Store</a></Button>
+              <Button asChild><a href={BUSINESS.mapsUrl} target="_blank" rel="noopener noreferrer">Get Directions</a></Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

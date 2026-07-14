@@ -1,15 +1,14 @@
-import React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Calendar, Users, MapPin, MessageSquare, UtensilsCrossed, PartyPopper, CheckCircle } from "lucide-react";
+import { Users, MapPin, UtensilsCrossed, PartyPopper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { BUSINESS } from "@/lib/business";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -22,15 +21,13 @@ const formSchema = z.object({
 });
 
 const TRAY_ITEMS = [
-  { name: "Chicken Biryani Half Tray", price: 65, serves: "10-12", img: "/images/biryani.png" },
-  { name: "Paneer Butter Masala Half Tray", price: 55, serves: "10-12", img: "/images/paneer.png" },
-  { name: "Samosa Platter (50 pcs)", price: 45, serves: "25", img: "/images/samosa.png" },
-  { name: "Gulab Jamun Half Tray", price: 40, serves: "20-25", img: "/images/sweets.png" },
+  { name: "Chicken Biryani", img: "/images/biryani.jpg" },
+  { name: "Paneer Butter Masala", img: "/images/paneer.jpg" },
+  { name: "Samosa Platters", img: "/images/samosa.jpg" },
+  { name: "Traditional Sweets", img: "/images/sweets.jpg" },
 ];
 
 export default function Catering() {
-  const [submitted, setSubmitted] = React.useState(false);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -45,25 +42,35 @@ export default function Catering() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    setSubmitted(true);
-    form.reset();
+    const subject = `Catering inquiry: ${values.eventType}`;
+    const body = [
+      `Name: ${values.name}`,
+      `Phone: ${values.phone}`,
+      `Email: ${values.email}`,
+      `Event date: ${values.date}`,
+      `Guest count: ${values.guests}`,
+      `Event type: ${values.eventType}`,
+      "",
+      values.message || "No additional details provided.",
+    ].join("\n");
+
+    window.location.href = `mailto:${BUSINESS.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
 
   return (
     <div className="animate-in fade-in duration-500 pb-10">
       {/* Hero */}
       <div className="relative h-[60vh] flex items-center justify-center bg-black overflow-hidden">
-        <img src="/images/catering-hero.png" className="absolute inset-0 w-full h-full object-cover opacity-50" alt="Catering" />
+        <img src="/images/catering-hero.jpg" className="absolute inset-0 w-full h-full object-cover opacity-50" alt="Catering" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
         <div className="relative z-10 text-center text-white px-4 max-w-3xl">
           <span className="uppercase tracking-widest text-sm font-semibold text-primary mb-4 block">Swadeshi Catering</span>
           <h1 className="text-4xl md:text-6xl font-bold mb-6">Make Your Event Memorable</h1>
-          <p className="text-lg md:text-xl opacity-90 mb-8">Authentic Indian cuisine for weddings, corporate events, and family gatherings. Freshly prepared and delivered on time.</p>
+          <p className="text-lg md:text-xl opacity-90 mb-8">Authentic Indian cuisine for weddings, corporate events, and family gatherings. Call or email to confirm menu, availability, and service options.</p>
           <div className="flex flex-wrap justify-center gap-6 text-sm font-medium">
-            <span className="flex items-center gap-2"><UtensilsCrossed className="w-5 h-5 text-primary" /> Custom Menus</span>
-            <span className="flex items-center gap-2"><Users className="w-5 h-5 text-primary" /> 10 to 1000 Guests</span>
-            <span className="flex items-center gap-2"><MapPin className="w-5 h-5 text-primary" /> On-site Setup</span>
+            <span className="flex items-center gap-2"><UtensilsCrossed className="w-5 h-5 text-primary" /> Menu Planning</span>
+            <span className="flex items-center gap-2"><Users className="w-5 h-5 text-primary" /> Group Orders</span>
+            <span className="flex items-center gap-2"><MapPin className="w-5 h-5 text-primary" /> Frisco Pickup</span>
           </div>
         </div>
       </div>
@@ -95,7 +102,7 @@ export default function Catering() {
           {/* Party Trays */}
           <div>
             <h2 className="text-3xl font-bold mb-6">Popular Party Trays</h2>
-            <p className="text-muted-foreground mb-8">Need food quick without full service? Order our ready-to-go party trays. Call the store directly for same-day availability.</p>
+            <p className="text-muted-foreground mb-8">These are popular catering ideas. Call the store to confirm current tray sizes, pricing, lead time, and availability.</p>
             
             <div className="space-y-4">
               {TRAY_ITEMS.map((tray, i) => (
@@ -104,33 +111,24 @@ export default function Catering() {
                     <img src={tray.img} className="w-24 h-24 rounded-lg object-cover" alt={tray.name} />
                     <div className="flex-1 flex flex-col justify-center">
                       <h3 className="font-bold text-lg">{tray.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">Serves {tray.serves}</p>
-                      <span className="font-bold text-primary">${tray.price}</span>
+                      <p className="text-sm text-muted-foreground">Sizes and pricing available by phone.</p>
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
             
-            <Button variant="outline" className="w-full mt-6 border-primary text-primary hover:bg-primary/10">Download Full Catering Menu (PDF)</Button>
+            <Button variant="outline" className="w-full mt-6 border-primary text-primary hover:bg-primary/10" asChild>
+              <a href={BUSINESS.phoneTel}>Call About Catering</a>
+            </Button>
           </div>
 
           {/* Form */}
           <div className="bg-card p-6 md:p-8 rounded-2xl shadow-xl border">
             <h2 className="text-2xl font-bold mb-2">Inquire About Catering</h2>
-            <p className="text-muted-foreground text-sm mb-6">Fill out this form and our catering manager will contact you within 24 hours to discuss your menu.</p>
-            
-            {submitted ? (
-              <Alert className="bg-green-50 border-green-200">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertTitle className="text-green-800">Request Sent Successfully!</AlertTitle>
-                <AlertDescription className="text-green-700">
-                  Thank you for your interest in Swadeshi catering. We have received your details and will call you soon to plan your event.
-                </AlertDescription>
-                <Button className="mt-4 w-full" variant="outline" onClick={() => setSubmitted(false)}>Submit Another Inquiry</Button>
-              </Alert>
-            ) : (
-              <Form {...form}>
+            <p className="text-muted-foreground text-sm mb-6">Prepare an email with your event details, then review and send it from your email app.</p>
+
+            <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <FormField control={form.control} name="name" render={({ field }) => (
@@ -205,11 +203,13 @@ export default function Catering() {
                   )} />
 
                   <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white h-12 text-lg rounded-xl mt-4">
-                    Submit Inquiry
+                    Open Catering Email Draft
                   </Button>
+                  <p className="text-xs text-muted-foreground text-center">
+                    This opens your email app. The website does not store or send your details itself.
+                  </p>
                 </form>
               </Form>
-            )}
           </div>
         </div>
       </div>
