@@ -8,8 +8,9 @@ frontend:
         - pnpm install --frozen-lockfile
     build:
       commands:
-        - pnpm --filter @workspace/swadeshi typecheck
-        - pnpm --filter @workspace/swadeshi build
+        # vite.config.ts requires PORT and BASE_PATH (Replit injects them; Amplify doesn't)
+        - PORT=8080 BASE_PATH=/ pnpm --filter @workspace/swadeshi typecheck
+        - PORT=8080 BASE_PATH=/ pnpm --filter @workspace/swadeshi build
   artifacts:
     baseDirectory: artifacts/swadeshi/dist/public
     files:
