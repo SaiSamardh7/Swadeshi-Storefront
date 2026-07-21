@@ -8,9 +8,13 @@
     "types": ["node"]
   },
   "include": ["src"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"],
   "references": [
     {
       "path": "../../lib/db"
+    },
+    {
+      "path": "../../lib/menu"
     },
     {
       "path": "../../lib/api-zod"

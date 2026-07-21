@@ -10,6 +10,16 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Phone-number login
+  - name: orders
+    description: Pickup orders
+  - name: menu
+    description: Live menu state
+  - name: catering
+    description: Catering quote requests
+  - name: admin
+    description: Staff order board
 paths:
   /healthz:
     get:
@@ -24,6 +34,372 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/request-code:
+    post:
+      operationId: requestCode
+      tags: [auth]
+      summary: Send a login code to a phone number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestCodeInput"
+      responses:
+        "200":
+          description: Code sent (or would be, once SMS is configured)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          description: Invalid phone number
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/verify-code:
+    post:
+      operationId: verifyCode
+      tags: [auth]
+      summary: Verify a login code and start a session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyCodeInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: Invalid or expired code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get the current logged-in user, if any
+      responses:
+        "200":
+          description: Current user (null if not logged in)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: End the current session
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+  /orders:
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Place a pickup order (requires login)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderInput"
+      responses:
+        "201":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "401":
+          description: Not logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Empty or invalid cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /orders/mine:
+    get:
+      operationId: getMyOrders
+      tags: [orders]
+      summary: List the current user's orders (requires login)
+      responses:
+        "200":
+          description: Orders, most recent first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+        "401":
+          description: Not logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /menu/state:
+    get:
+      operationId: getMenuState
+      tags: [menu]
+      summary: Live menu state — sold-out items, price overrides, ordering pause
+      responses:
+        "200":
+          description: Current state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MenuState"
+  /catering/requests:
+    post:
+      operationId: createCateringRequest
+      tags: [catering]
+      summary: Submit a catering quote request (no login required)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCateringRequestInput"
+      responses:
+        "201":
+          description: Request received
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CateringRequest"
+        "400":
+          description: Invalid or empty request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/catering:
+    get:
+      operationId: getAdminCateringRequests
+      tags: [admin]
+      summary: List catering requests (requires staff login)
+      responses:
+        "200":
+          description: Requests, most recent first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CateringRequest"
+        "401":
+          description: Not logged in as staff
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/catering/{id}/status:
+    post:
+      operationId: updateCateringStatus
+      tags: [admin]
+      summary: Update a catering request's status (requires staff login)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCateringStatusInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CateringRequest"
+        "401":
+          description: Not logged in as staff
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Staff login to the order board
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "401":
+          description: Wrong password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/logout:
+    post:
+      operationId: adminLogout
+      tags: [admin]
+      summary: End the staff session
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+  /admin/orders:
+    get:
+      operationId: getAdminOrders
+      tags: [admin]
+      summary: List all orders (requires staff login)
+      responses:
+        "200":
+          description: Orders, most recent first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+        "401":
+          description: Not logged in as staff
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/orders/{id}/status:
+    post:
+      operationId: updateOrderStatus
+      tags: [admin]
+      summary: Update an order's status (requires staff login)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOrderStatusInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "401":
+          description: Not logged in as staff
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/menu/overrides/{itemId}:
+    put:
+      operationId: updateMenuOverride
+      tags: [admin]
+      summary: Set an item's sold-out flag and price override (requires staff login)
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMenuOverrideInput"
+      responses:
+        "200":
+          description: Updated override state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MenuOverride"
+        "401":
+          description: Not logged in as staff
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Unknown menu item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/store:
+    post:
+      operationId: updateStoreState
+      tags: [admin]
+      summary: Pause or resume online ordering (requires staff login)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateStoreStateInput"
+      responses:
+        "200":
+          description: Updated store state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoreState"
+        "401":
+          description: Not logged in as staff
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -31,6 +407,347 @@ components:
       properties:
         status:
           type: string
+      required:
+        - status
+    OkResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required:
+        - ok
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    RequestCodeInput:
+      type: object
+      properties:
+        phone:
+          type: string
+          description: E.164 format, e.g. +14692943500
+      required:
+        - phone
+    VerifyCodeInput:
+      type: object
+      properties:
+        phone:
+          type: string
+        code:
+          type: string
+      required:
+        - phone
+        - code
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        phone:
+          type: string
+        name:
+          type: string
+          nullable: true
+      required:
+        - id
+        - phone
+    UserResponse:
+      type: object
+      properties:
+        user:
+          oneOf:
+            - $ref: "#/components/schemas/User"
+            - type: "null"
+      required:
+        - user
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        itemId:
+          type: string
+        name:
+          type: string
+        unitPriceCents:
+          type: integer
+        qty:
+          type: integer
+      required:
+        - id
+        - itemId
+        - name
+        - unitPriceCents
+        - qty
+    OrderItemInput:
+      description: >-
+        Only itemId + qty — name and price are looked up server-side from the
+        menu catalog, never trusted from the client.
+      type: object
+      properties:
+        itemId:
+          type: string
+        qty:
+          type: integer
+          minimum: 1
+      required:
+        - itemId
+        - qty
+    OrderStatus:
+      type: string
+      enum: [new, preparing, ready, picked_up]
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          $ref: "#/components/schemas/OrderStatus"
+        pickupName:
+          type: string
+        note:
+          type: string
+          nullable: true
+        subtotalCents:
+          type: integer
+        pickupEta:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+      required:
+        - id
+        - status
+        - pickupName
+        - subtotalCents
+        - pickupEta
+        - createdAt
+        - items
+    CreateOrderInput:
+      type: object
+      properties:
+        pickupName:
+          type: string
+          minLength: 1
+        note:
+          type: string
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/OrderItemInput"
+      required:
+        - pickupName
+        - items
+    MenuOverride:
+      description: >-
+        Staff-set deviation from the printed menu for one item. priceCents null
+        means the catalog price applies.
+      type: object
+      properties:
+        itemId:
+          type: string
+        soldOut:
+          type: boolean
+        priceCents:
+          type: integer
+          nullable: true
+      required:
+        - itemId
+        - soldOut
+        - priceCents
+    MenuState:
+      type: object
+      properties:
+        orderingPaused:
+          type: boolean
+        overrides:
+          type: array
+          items:
+            $ref: "#/components/schemas/MenuOverride"
+      required:
+        - orderingPaused
+        - overrides
+    UpdateMenuOverrideInput:
+      description: >-
+        Full desired state for one item — soldOut false plus priceCents null
+        returns the item to its printed-menu defaults.
+      type: object
+      properties:
+        soldOut:
+          type: boolean
+        priceCents:
+          type: integer
+          minimum: 1
+          nullable: true
+      required:
+        - soldOut
+        - priceCents
+    StoreState:
+      type: object
+      properties:
+        orderingPaused:
+          type: boolean
+      required:
+        - orderingPaused
+    UpdateStoreStateInput:
+      type: object
+      properties:
+        orderingPaused:
+          type: boolean
+      required:
+        - orderingPaused
+    TraySize:
+      type: string
+      enum: [half, full]
+    CateringStatus:
+      type: string
+      enum: [new, contacted, quoted, closed]
+    CateringItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        trayId:
+          type: string
+        name:
+          type: string
+        size:
+          $ref: "#/components/schemas/TraySize"
+        qty:
+          type: integer
+        unitPriceCents:
+          type: integer
+      required:
+        - id
+        - trayId
+        - name
+        - size
+        - qty
+        - unitPriceCents
+    CateringItemInput:
+      description: >-
+        Only trayId + size + qty — the name and price are looked up server-side
+        from the catering tray catalog, never trusted from the client.
+      type: object
+      properties:
+        trayId:
+          type: string
+        size:
+          $ref: "#/components/schemas/TraySize"
+        qty:
+          type: integer
+          minimum: 1
+      required:
+        - trayId
+        - size
+        - qty
+    CateringRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          $ref: "#/components/schemas/CateringStatus"
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        eventDate:
+          type: string
+        eventType:
+          type: string
+        guestCount:
+          type: integer
+        note:
+          type: string
+          nullable: true
+        estimateCents:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CateringItem"
+      required:
+        - id
+        - status
+        - name
+        - phone
+        - email
+        - eventDate
+        - eventType
+        - guestCount
+        - estimateCents
+        - createdAt
+        - items
+    CreateCateringRequestInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        phone:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+        eventDate:
+          type: string
+          minLength: 1
+        eventType:
+          type: string
+          minLength: 1
+        guestCount:
+          type: integer
+          minimum: 1
+        note:
+          type: string
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/CateringItemInput"
+      required:
+        - name
+        - phone
+        - email
+        - eventDate
+        - eventType
+        - guestCount
+        - items
+    UpdateCateringStatusInput:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/CateringStatus"
+      required:
+        - status
+    AdminLoginInput:
+      type: object
+      properties:
+        password:
+          type: string
+      required:
+        - password
+    UpdateOrderStatusInput:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/OrderStatus"
       required:
         - status
 
