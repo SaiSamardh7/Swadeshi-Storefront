@@ -50,3 +50,12 @@ Thumbs.db
 
 # raw image masters (54MB) — compressed versions live in public/images
 artifacts/swadeshi/media-sources/
+
+# secrets — never commit
+.env
+.env.local
+artifacts/*/.env
+artifacts/*/.env.local
+
+# PNG masters for menu photos — compressed .jpg versions are committed instead
+artifacts/swadeshi/public/images/menu/*.png
