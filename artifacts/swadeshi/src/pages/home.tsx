@@ -1,19 +1,10 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronRight, ShoppingBag, UtensilsCrossed, Coffee, Droplet, Candy, MapPin } from "lucide-react";
+import { ChevronRight, MapPin } from "lucide-react";
 import useEmblaCarousel from "embla-carousel-react";
 import { BUSINESS } from "@/lib/business";
-import { FULL_MENU } from "@/data/fullmenu";
-
-const CATEGORIES = [
-  { title: "Grocery", icon: ShoppingBag, desc: "Everyday essentials", img: "/images/lassi.jpg" },
-  { title: "Halal Meat", icon: UtensilsCrossed, desc: "Fresh selection", img: "/images/biryani.jpg" },
-  { title: "Cooked Food", icon: UtensilsCrossed, desc: "Ready to eat", img: "/images/paneer.jpg" },
-  { title: "Sweets", icon: Candy, desc: "Traditional desserts", img: "/images/sweets.jpg" },
-  { title: "Beverages", icon: Droplet, desc: "Lassi & drinks", img: "/images/lassi.jpg" },
-  { title: "Spices", icon: Coffee, desc: "Authentic flavors", img: "/images/dosa.jpg" }
-];
+import { FULL_MENU } from "@workspace/menu";
 
 const MENU_ITEMS = FULL_MENU.flatMap((section) =>
   section.categories.flatMap((category) => category.items)
@@ -67,28 +58,6 @@ export default function Home() {
             <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
             <img src="/images/biryani.jpg" alt="Delicious Biryani" className="relative z-10 rounded-2xl shadow-2xl object-cover aspect-[4/3] w-full" />
           </div>
-        </div>
-      </section>
-
-      {/* Categories */}
-      <section className="py-16 px-4 container mx-auto">
-        <h2 className="text-2xl font-bold mb-8">Shop by Category</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {CATEGORIES.map((cat) => (
-            <Link key={cat.title} href={cat.title === "Cooked Food" ? "/menu" : "/grocery-halal"}>
-              <Card className="hover-elevate cursor-pointer transition-all border-none shadow-sm hover:shadow-md h-full">
-                <CardContent className="p-4 flex flex-col items-center text-center gap-3">
-                  <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center text-primary mb-2">
-                    <cat.icon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-sm">{cat.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-1">{cat.desc}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
         </div>
       </section>
 

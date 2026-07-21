@@ -55,6 +55,14 @@ export default defineConfig({
     fs: {
       strict: true,
     },
+    // Same-origin from the browser's point of view, so session cookies work
+    // without any CORS/credentials configuration.
+    proxy: {
+      "/api": {
+        target: process.env.API_PROXY_TARGET ?? "http://localhost:5050",
+        changeOrigin: true,
+      },
+    },
   },
   preview: {
     port,

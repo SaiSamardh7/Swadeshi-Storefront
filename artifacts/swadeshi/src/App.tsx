@@ -1,5 +1,8 @@
 import { lazy, Suspense } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/lib/query-client";
+import { CartProvider } from "@/hooks/use-cart";
 import { Layout } from "@/components/layout";
 
 const Home = lazy(() => import("@/pages/home"));
@@ -11,6 +14,10 @@ const Location = lazy(() => import("@/pages/location"));
 const Contact = lazy(() => import("@/pages/contact"));
 const Gallery = lazy(() => import("@/pages/gallery"));
 const Reviews = lazy(() => import("@/pages/reviews"));
+const Login = lazy(() => import("@/pages/login"));
+const Cart = lazy(() => import("@/pages/cart"));
+const Checkout = lazy(() => import("@/pages/checkout"));
+const Admin = lazy(() => import("@/pages/admin"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function PageFallback() {
@@ -35,6 +42,10 @@ function Router() {
           <Route path="/contact" component={Contact} />
           <Route path="/gallery" component={Gallery} />
           <Route path="/reviews" component={Reviews} />
+          <Route path="/login" component={Login} />
+          <Route path="/cart" component={Cart} />
+          <Route path="/checkout" component={Checkout} />
+          <Route path="/admin" component={Admin} />
           <Route component={NotFound} />
         </Switch>
       </Suspense>
@@ -44,9 +55,13 @@ function Router() {
 
 function App() {
   return (
-    <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-      <Router />
-    </WouterRouter>
+    <QueryClientProvider client={queryClient}>
+      <CartProvider>
+        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+          <Router />
+        </WouterRouter>
+      </CartProvider>
+    </QueryClientProvider>
   );
 }
 

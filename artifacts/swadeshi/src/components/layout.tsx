@@ -1,11 +1,15 @@
 import { Link, useLocation } from "wouter";
-import { Home, Grid, MapPin, ShoppingBag } from "lucide-react";
+import { Home, Grid, MapPin, ShoppingBag, ShoppingCart, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BUSINESS, ORDER_HREF, ORDER_LABEL } from "@/lib/business";
+import { useCart } from "@/hooks/use-cart";
+import { useGetMe } from "@workspace/api-client-react";
 import swadeshiLogo from "@/assets/swadeshi-logo.png";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const { itemCount } = useCart();
+  const { data: me } = useGetMe();
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background">
       {/* Sticky Top Navigation */}
@@ -26,7 +30,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </nav>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-4">
+          <div className="flex items-center gap-1 md:gap-3">
+            <Link
+              href="/cart"
+              aria-label={`Cart, ${itemCount} item${itemCount === 1 ? "" : "s"}`}
+              className="relative inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-accent"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
+            <Link
+              href={me?.user ? "/cart" : "/login"}
+              aria-label={me?.user ? "Account" : "Log in"}
+              className="hidden h-9 w-9 items-center justify-center rounded-full hover:bg-accent sm:inline-flex"
+            >
+              <User className="h-5 w-5" />
+            </Link>
             <Button asChild className="hidden md:flex bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-6">
               <a href={ORDER_HREF} target="_blank" rel="noopener noreferrer">{ORDER_LABEL}</a>
             </Button>

@@ -1,15 +1,14 @@
 import { useState, useMemo } from "react";
-import { Search } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { FULL_MENU } from "@/data/fullmenu";
+import { FULL_MENU, menuItemId } from "@workspace/menu";
 import { getMenuItemDescription, getMenuItemPhoto } from "@/data/menu-display";
 import { BUSINESS } from "@/lib/business";
-
-// Stable item id from category + name so identical dish names in different
-// categories stay distinct.
-const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+import { useCart } from "@/hooks/use-cart";
+import { VegDot } from "@/components/veg-dot";
+import { useGetMenuState, getGetMenuStateQueryKey, type MenuOverride } from "@workspace/api-client-react";
 
 type FlatItem = {
   id: string;
@@ -24,7 +23,7 @@ type FlatItem = {
 const ALL_ITEMS: FlatItem[] = FULL_MENU.flatMap((s) =>
   s.categories.flatMap((c) =>
     c.items.map((i) => ({
-      id: `${slug(c.category)}-${slug(i.name)}`,
+      id: menuItemId(c.category, i.name),
       name: i.name,
       price: i.price,
       isVeg: i.isVeg,
@@ -46,21 +45,24 @@ const POPULAR = ([/biryani/i, /masala dosa/i, /paneer/i, /samosa/i, /lassi/i, /i
 
 const SECTIONS = ["All", ...FULL_MENU.map((s) => s.section)];
 
-function VegDot({ isVeg }: { isVeg: boolean }) {
-  return (
-    <div
-      className={`w-3.5 h-3.5 rounded-sm flex items-center justify-center border shrink-0 ${isVeg ? "border-green-600" : "border-red-600"}`}
-      title={isVeg ? "Vegetarian" : "Non-vegetarian"}
-    >
-      <div className={`w-1.5 h-1.5 rounded-full ${isVeg ? "bg-green-600" : "bg-red-600"}`} />
-    </div>
-  );
-}
-
 export default function Menu() {
+  const { addToCart } = useCart();
   const [search, setSearch] = useState("");
   const [diet, setDiet] = useState<"all" | "veg" | "non-veg">("all");
   const [activeSection, setActiveSection] = useState("All");
+
+  // Staff overrides (sold out / repriced) — if the API is unreachable the
+  // menu still renders with printed prices.
+  const { data: menuState } = useGetMenuState({
+    query: { queryKey: getGetMenuStateQueryKey(), retry: false },
+  });
+  const overrides = useMemo(
+    () => new Map<string, MenuOverride>((menuState?.overrides ?? []).map((o) => [o.itemId, o])),
+    [menuState],
+  );
+  const isSoldOut = (id: string) => overrides.get(id)?.soldOut ?? false;
+  const priceCentsFor = (id: string, printedDollars: number) =>
+    overrides.get(id)?.priceCents ?? Math.round(printedDollars * 100);
 
   const q = search.trim().toLowerCase();
 
@@ -133,7 +135,33 @@ export default function Menu() {
                   <p className="mt-2 min-h-10 text-xs leading-5 text-muted-foreground line-clamp-2">
                     {item.description}
                   </p>
-                  <div className="mt-2 font-bold">${item.price.toFixed(2)}</div>
+                  <div className="mt-2 flex items-center justify-between">
+                    {isSoldOut(item.id) ? (
+                      <span className="text-sm font-semibold text-destructive">Sold out today</span>
+                    ) : (
+                      <span className="font-bold">
+                        ${(priceCentsFor(item.id, item.price) / 100).toFixed(2)}
+                      </span>
+                    )}
+                    <Button
+                      type="button"
+                      size="icon"
+                      className="h-7 w-7 rounded-full"
+                      aria-label={`Add ${item.name} to cart`}
+                      disabled={isSoldOut(item.id)}
+                      onClick={() =>
+                        addToCart({
+                          id: item.id,
+                          name: item.name,
+                          priceCents: priceCentsFor(item.id, item.price),
+                          image: item.img,
+                          isVeg: item.isVeg,
+                        })
+                      }
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -207,7 +235,7 @@ export default function Menu() {
                         {c.items.map((i, idx) => {
                           // The source menu repeats some names within a category,
                           // so include the source index to keep React keys unique.
-                          const id = `${slug(c.category)}-${slug(i.name)}`;
+                          const id = menuItemId(c.category, i.name);
                           const display = { ...i, category: c.category };
                           const description = getMenuItemDescription(display);
                           const img = getMenuItemPhoto(display);
@@ -229,11 +257,37 @@ export default function Menu() {
                                 <div className="flex items-start gap-2">
                                   <VegDot isVeg={i.isVeg} />
                                   <h4 className="flex-1 text-sm font-semibold leading-snug sm:text-base">{i.name}</h4>
-                                  <span className="shrink-0 text-sm font-bold text-primary">${i.price.toFixed(2)}</span>
+                                  <span className="shrink-0 text-sm font-bold text-primary">
+                                    ${(priceCentsFor(id, i.price) / 100).toFixed(2)}
+                                  </span>
                                 </div>
                                 <p className="mt-2 text-xs leading-5 text-muted-foreground line-clamp-2 sm:text-sm">
                                   {description}
                                 </p>
+                                {isSoldOut(id) ? (
+                                  <span className="mt-2 self-start rounded-full bg-destructive/10 px-3 py-1 text-xs font-semibold text-destructive">
+                                    Sold out today
+                                  </span>
+                                ) : (
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    className="mt-2 self-start rounded-full"
+                                    onClick={() =>
+                                      addToCart({
+                                        id,
+                                        name: i.name,
+                                        priceCents: priceCentsFor(id, i.price),
+                                        image: img,
+                                        isVeg: i.isVeg,
+                                      })
+                                    }
+                                  >
+                                    <Plus className="mr-1 h-3.5 w-3.5" />
+                                    Add to cart
+                                  </Button>
+                                )}
                               </div>
                             </li>
                           );
