@@ -660,6 +660,226 @@ export function useGetMenuState<TData = Awaited<ReturnType<typeof getMenuState>>
 
 
 
+export const getCreateCateringRequestUrl = () => {
+
+
+
+
+  return `/api/catering/requests`
+}
+
+/**
+ * @summary Submit a catering quote request (no login required)
+ */
+export const createCateringRequest = async (createCateringRequestInput: CreateCateringRequestInput, options?: RequestInit): Promise<CateringRequest> => {
+
+  return customFetch<CateringRequest>(getCreateCateringRequestUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createCateringRequestInput)
+  }
+);}
+
+
+
+
+
+export const getCreateCateringRequestMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCateringRequest>>, TError,{data: BodyType<CreateCateringRequestInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createCateringRequest>>, TError,{data: BodyType<CreateCateringRequestInput>}, TContext> => {
+
+const mutationKey = ['createCateringRequest'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCateringRequest>>, {data: BodyType<CreateCateringRequestInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createCateringRequest(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateCateringRequestMutationResult = NonNullable<Awaited<ReturnType<typeof createCateringRequest>>>
+    export type CreateCateringRequestMutationBody = BodyType<CreateCateringRequestInput>
+    export type CreateCateringRequestMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Submit a catering quote request (no login required)
+ */
+export const useCreateCateringRequest = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCateringRequest>>, TError,{data: BodyType<CreateCateringRequestInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createCateringRequest>>,
+        TError,
+        {data: BodyType<CreateCateringRequestInput>},
+        TContext
+      > => {
+      return useMutation(getCreateCateringRequestMutationOptions(options));
+    }
+
+export const getGetAdminCateringRequestsUrl = () => {
+
+
+
+
+  return `/api/admin/catering`
+}
+
+/**
+ * @summary List catering requests (requires staff login)
+ */
+export const getAdminCateringRequests = async ( options?: RequestInit): Promise<CateringRequest[]> => {
+
+  return customFetch<CateringRequest[]>(getGetAdminCateringRequestsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminCateringRequestsQueryKey = () => {
+    return [
+    `/api/admin/catering`
+    ] as const;
+    }
+
+
+export const getGetAdminCateringRequestsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminCateringRequests>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCateringRequests>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminCateringRequestsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminCateringRequests>>> = ({ signal }) => getAdminCateringRequests({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminCateringRequests>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminCateringRequestsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminCateringRequests>>>
+export type GetAdminCateringRequestsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary List catering requests (requires staff login)
+ */
+
+export function useGetAdminCateringRequests<TData = Awaited<ReturnType<typeof getAdminCateringRequests>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCateringRequests>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminCateringRequestsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateCateringStatusUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/catering/${id}/status`
+}
+
+/**
+ * @summary Update a catering request's status (requires staff login)
+ */
+export const updateCateringStatus = async (id: number,
+    updateCateringStatusInput: UpdateCateringStatusInput, options?: RequestInit): Promise<CateringRequest> => {
+
+  return customFetch<CateringRequest>(getUpdateCateringStatusUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateCateringStatusInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateCateringStatusMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCateringStatus>>, TError,{id: number;data: BodyType<UpdateCateringStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCateringStatus>>, TError,{id: number;data: BodyType<UpdateCateringStatusInput>}, TContext> => {
+
+const mutationKey = ['updateCateringStatus'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCateringStatus>>, {id: number;data: BodyType<UpdateCateringStatusInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateCateringStatus(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCateringStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateCateringStatus>>>
+    export type UpdateCateringStatusMutationBody = BodyType<UpdateCateringStatusInput>
+    export type UpdateCateringStatusMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Update a catering request's status (requires staff login)
+ */
+export const useUpdateCateringStatus = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCateringStatus>>, TError,{id: number;data: BodyType<UpdateCateringStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateCateringStatus>>,
+        TError,
+        {id: number;data: BodyType<UpdateCateringStatusInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateCateringStatusMutationOptions(options));
+    }
+
 export const getAdminLoginUrl = () => {
 
 
@@ -1092,224 +1312,5 @@ export const useUpdateStoreState = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getUpdateStoreStateMutationOptions(options));
-    }
-
-export const getCreateCateringRequestUrl = () => {
-
-
-
-
-  return `/api/catering/requests`
-}
-
-/**
- * @summary Submit a catering quote request (no login required)
- */
-export const createCateringRequest = async (createCateringRequestInput: CreateCateringRequestInput, options?: RequestInit): Promise<CateringRequest> => {
-
-  return customFetch<CateringRequest>(getCreateCateringRequestUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(createCateringRequestInput)
-  }
-);}
-
-
-
-
-
-export const getCreateCateringRequestMutationOptions = <TError = ErrorType<ErrorResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCateringRequest>>, TError,{data: BodyType<CreateCateringRequestInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createCateringRequest>>, TError,{data: BodyType<CreateCateringRequestInput>}, TContext> => {
-
-const mutationKey = ['createCateringRequest'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCateringRequest>>, {data: BodyType<CreateCateringRequestInput>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  createCateringRequest(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateCateringRequestMutationResult = NonNullable<Awaited<ReturnType<typeof createCateringRequest>>>
-    export type CreateCateringRequestMutationBody = BodyType<CreateCateringRequestInput>
-    export type CreateCateringRequestMutationError = ErrorType<ErrorResponse>
-
-    /**
- * @summary Submit a catering quote request (no login required)
- */
-export const useCreateCateringRequest = <TError = ErrorType<ErrorResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCateringRequest>>, TError,{data: BodyType<CreateCateringRequestInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof createCateringRequest>>,
-        TError,
-        {data: BodyType<CreateCateringRequestInput>},
-        TContext
-      > => {
-      return useMutation(getCreateCateringRequestMutationOptions(options));
-    }
-
-export const getGetAdminCateringRequestsUrl = () => {
-
-
-
-
-  return `/api/admin/catering`
-}
-
-/**
- * @summary List catering requests (requires staff login)
- */
-export const getAdminCateringRequests = async ( options?: RequestInit): Promise<CateringRequest[]> => {
-
-  return customFetch<CateringRequest[]>(getGetAdminCateringRequestsUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-export const getGetAdminCateringRequestsQueryKey = () => {
-    return [
-    `/api/admin/catering`
-    ] as const;
-    }
-
-
-export const getGetAdminCateringRequestsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminCateringRequests>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCateringRequests>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAdminCateringRequestsQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminCateringRequests>>> = ({ signal }) => getAdminCateringRequests({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminCateringRequests>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetAdminCateringRequestsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminCateringRequests>>>
-export type GetAdminCateringRequestsQueryError = ErrorType<ErrorResponse>
-
-
-/**
- * @summary List catering requests (requires staff login)
- */
-
-export function useGetAdminCateringRequests<TData = Awaited<ReturnType<typeof getAdminCateringRequests>>, TError = ErrorType<ErrorResponse>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminCateringRequests>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetAdminCateringRequestsQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getUpdateCateringStatusUrl = (id: number,) => {
-
-
-
-
-  return `/api/admin/catering/${id}/status`
-}
-
-/**
- * @summary Update a catering request's status (requires staff login)
- */
-export const updateCateringStatus = async (id: number,
-    updateCateringStatusInput: UpdateCateringStatusInput, options?: RequestInit): Promise<CateringRequest> => {
-
-  return customFetch<CateringRequest>(getUpdateCateringStatusUrl(id),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(updateCateringStatusInput)
-  }
-);}
-
-
-
-
-
-export const getUpdateCateringStatusMutationOptions = <TError = ErrorType<ErrorResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCateringStatus>>, TError,{id: number;data: BodyType<UpdateCateringStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateCateringStatus>>, TError,{id: number;data: BodyType<UpdateCateringStatusInput>}, TContext> => {
-
-const mutationKey = ['updateCateringStatus'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCateringStatus>>, {id: number;data: BodyType<UpdateCateringStatusInput>}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  updateCateringStatus(id,data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateCateringStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateCateringStatus>>>
-    export type UpdateCateringStatusMutationBody = BodyType<UpdateCateringStatusInput>
-    export type UpdateCateringStatusMutationError = ErrorType<ErrorResponse>
-
-    /**
- * @summary Update a catering request's status (requires staff login)
- */
-export const useUpdateCateringStatus = <TError = ErrorType<ErrorResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCateringStatus>>, TError,{id: number;data: BodyType<UpdateCateringStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof updateCateringStatus>>,
-        TError,
-        {id: number;data: BodyType<UpdateCateringStatusInput>},
-        TContext
-      > => {
-      return useMutation(getUpdateCateringStatusMutationOptions(options));
     }
 

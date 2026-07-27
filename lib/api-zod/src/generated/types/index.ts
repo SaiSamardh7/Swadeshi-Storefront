@@ -7,6 +7,11 @@
  */
 
 export * from './adminLoginInput';
+export * from './cateringItem';
+export * from './cateringItemInput';
+export * from './cateringRequest';
+export * from './cateringStatus';
+export * from './createCateringRequestInput';
 export * from './createOrderInput';
 export * from './errorResponse';
 export * from './healthStatus';
@@ -19,6 +24,8 @@ export * from './orderItemInput';
 export * from './orderStatus';
 export * from './requestCodeInput';
 export * from './storeState';
+export * from './traySize';
+export * from './updateCateringStatusInput';
 export * from './updateMenuOverrideInput';
 export * from './updateOrderStatusInput';
 export * from './updateStoreStateInput';

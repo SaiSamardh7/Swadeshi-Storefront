@@ -114,14 +114,6 @@ export interface UpdateStoreStateInput {
   orderingPaused: boolean;
 }
 
-export interface AdminLoginInput {
-  password: string;
-}
-
-export interface UpdateOrderStatusInput {
-  status: OrderStatus;
-}
-
 export type TraySize = typeof TraySize[keyof typeof TraySize];
 
 
@@ -193,5 +185,13 @@ export interface CreateCateringRequestInput {
 
 export interface UpdateCateringStatusInput {
   status: CateringStatus;
+}
+
+export interface AdminLoginInput {
+  password: string;
+}
+
+export interface UpdateOrderStatusInput {
+  status: OrderStatus;
 }
 

@@ -137,6 +137,117 @@ export const GetMenuStateResponse = zod.object({
 
 
 /**
+ * @summary Submit a catering quote request (no login required)
+ */
+
+
+
+
+
+
+
+
+
+export const CreateCateringRequestBody = zod.object({
+  "name": zod.string().min(1),
+  "phone": zod.string().min(1),
+  "email": zod.string().regex(new RegExp('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')),
+  "eventDate": zod.string().min(1),
+  "eventType": zod.string().min(1),
+  "guestCount": zod.number().min(1),
+  "note": zod.string().optional(),
+  "items": zod.array(zod.object({
+  "trayId": zod.string(),
+  "size": zod.enum(['half', 'full']),
+  "qty": zod.number().min(1)
+}).describe('Only trayId + size + qty — the name and price are looked up server-side from the catering tray catalog, never trusted from the client.')).min(1)
+})
+
+export const CreateCateringRequestResponse = zod.object({
+  "id": zod.number(),
+  "status": zod.enum(['new', 'contacted', 'quoted', 'closed']),
+  "name": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string(),
+  "eventDate": zod.string(),
+  "eventType": zod.string(),
+  "guestCount": zod.number(),
+  "note": zod.string().nullish(),
+  "estimateCents": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "trayId": zod.string(),
+  "name": zod.string(),
+  "size": zod.enum(['half', 'full']),
+  "qty": zod.number(),
+  "unitPriceCents": zod.number()
+}))
+})
+
+
+/**
+ * @summary List catering requests (requires staff login)
+ */
+export const GetAdminCateringRequestsResponseItem = zod.object({
+  "id": zod.number(),
+  "status": zod.enum(['new', 'contacted', 'quoted', 'closed']),
+  "name": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string(),
+  "eventDate": zod.string(),
+  "eventType": zod.string(),
+  "guestCount": zod.number(),
+  "note": zod.string().nullish(),
+  "estimateCents": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "trayId": zod.string(),
+  "name": zod.string(),
+  "size": zod.enum(['half', 'full']),
+  "qty": zod.number(),
+  "unitPriceCents": zod.number()
+}))
+})
+export const GetAdminCateringRequestsResponse = zod.array(GetAdminCateringRequestsResponseItem)
+
+
+/**
+ * @summary Update a catering request's status (requires staff login)
+ */
+export const UpdateCateringStatusParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateCateringStatusBody = zod.object({
+  "status": zod.enum(['new', 'contacted', 'quoted', 'closed'])
+})
+
+export const UpdateCateringStatusResponse = zod.object({
+  "id": zod.number(),
+  "status": zod.enum(['new', 'contacted', 'quoted', 'closed']),
+  "name": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string(),
+  "eventDate": zod.string(),
+  "eventType": zod.string(),
+  "guestCount": zod.number(),
+  "note": zod.string().nullish(),
+  "estimateCents": zod.number(),
+  "createdAt": zod.coerce.date(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "trayId": zod.string(),
+  "name": zod.string(),
+  "size": zod.enum(['half', 'full']),
+  "qty": zod.number(),
+  "unitPriceCents": zod.number()
+}))
+})
+
+
+/**
  * @summary Staff login to the order board
  */
 export const AdminLoginBody = zod.object({
@@ -238,108 +349,6 @@ export const UpdateStoreStateBody = zod.object({
 
 export const UpdateStoreStateResponse = zod.object({
   "orderingPaused": zod.boolean()
-})
-
-
-/**
- * @summary Submit a catering quote request (no login required)
- */
-export const CreateCateringRequestBody = zod.object({
-  "name": zod.string().min(1),
-  "phone": zod.string().min(1),
-  "email": zod.string().email(),
-  "eventDate": zod.string().min(1),
-  "eventType": zod.string().min(1),
-  "guestCount": zod.number().min(1),
-  "note": zod.string().optional(),
-  "items": zod.array(zod.object({
-  "trayId": zod.string(),
-  "size": zod.enum(['half', 'full']),
-  "qty": zod.number().min(1)
-}).describe('Only trayId + size + qty — the name and price are looked up server-side from the catering tray catalog, never trusted from the client.')).min(1)
-})
-
-export const CreateCateringRequestResponse = zod.object({
-  "id": zod.number(),
-  "status": zod.enum(['new', 'contacted', 'quoted', 'closed']),
-  "name": zod.string(),
-  "phone": zod.string(),
-  "email": zod.string(),
-  "eventDate": zod.string(),
-  "eventType": zod.string(),
-  "guestCount": zod.number(),
-  "note": zod.string().nullish(),
-  "estimateCents": zod.number(),
-  "createdAt": zod.coerce.date(),
-  "items": zod.array(zod.object({
-  "id": zod.number(),
-  "trayId": zod.string(),
-  "name": zod.string(),
-  "size": zod.enum(['half', 'full']),
-  "qty": zod.number(),
-  "unitPriceCents": zod.number()
-}))
-})
-
-
-/**
- * @summary List catering requests (requires staff login)
- */
-export const GetAdminCateringRequestsResponseItem = zod.object({
-  "id": zod.number(),
-  "status": zod.enum(['new', 'contacted', 'quoted', 'closed']),
-  "name": zod.string(),
-  "phone": zod.string(),
-  "email": zod.string(),
-  "eventDate": zod.string(),
-  "eventType": zod.string(),
-  "guestCount": zod.number(),
-  "note": zod.string().nullish(),
-  "estimateCents": zod.number(),
-  "createdAt": zod.coerce.date(),
-  "items": zod.array(zod.object({
-  "id": zod.number(),
-  "trayId": zod.string(),
-  "name": zod.string(),
-  "size": zod.enum(['half', 'full']),
-  "qty": zod.number(),
-  "unitPriceCents": zod.number()
-}))
-})
-export const GetAdminCateringRequestsResponse = zod.array(GetAdminCateringRequestsResponseItem)
-
-
-/**
- * @summary Update a catering request's status (requires staff login)
- */
-export const UpdateCateringStatusParams = zod.object({
-  "id": zod.coerce.number()
-})
-
-export const UpdateCateringStatusBody = zod.object({
-  "status": zod.enum(['new', 'contacted', 'quoted', 'closed'])
-})
-
-export const UpdateCateringStatusResponse = zod.object({
-  "id": zod.number(),
-  "status": zod.enum(['new', 'contacted', 'quoted', 'closed']),
-  "name": zod.string(),
-  "phone": zod.string(),
-  "email": zod.string(),
-  "eventDate": zod.string(),
-  "eventType": zod.string(),
-  "guestCount": zod.number(),
-  "note": zod.string().nullish(),
-  "estimateCents": zod.number(),
-  "createdAt": zod.coerce.date(),
-  "items": zod.array(zod.object({
-  "id": zod.number(),
-  "trayId": zod.string(),
-  "name": zod.string(),
-  "size": zod.enum(['half', 'full']),
-  "qty": zod.number(),
-  "unitPriceCents": zod.number()
-}))
 })
 
 

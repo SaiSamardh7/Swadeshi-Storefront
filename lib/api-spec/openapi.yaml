@@ -703,8 +703,12 @@ components:
           type: string
           minLength: 1
         email:
+          # A pattern rather than `format: email` on purpose: orval maps the
+          # format to zod.email(), which only exists in zod v4, and this
+          # workspace is on zod 3.x — the generated file would not compile.
+          # .regex() exists in both, so this survives regeneration.
           type: string
-          format: email
+          pattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$'
         eventDate:
           type: string
           minLength: 1
