@@ -7,6 +7,7 @@ import { Layout } from "@/components/layout";
 
 const Home = lazy(() => import("@/pages/home"));
 const Menu = lazy(() => import("@/pages/menu"));
+const Delivery = lazy(() => import("@/pages/delivery"));
 const GroceryHalal = lazy(() => import("@/pages/grocery-halal"));
 const Catering = lazy(() => import("@/pages/catering"));
 const About = lazy(() => import("@/pages/about"));
@@ -35,6 +36,7 @@ function Router() {
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/menu" component={Menu} />
+          <Route path="/delivery" component={Delivery} />
           <Route path="/grocery-halal" component={GroceryHalal} />
           <Route path="/catering" component={Catering} />
           <Route path="/about" component={About} />
