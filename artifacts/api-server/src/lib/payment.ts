@@ -9,7 +9,7 @@
 
 export type PaymentResult = { status: "paid"; ref: string } | { status: "failed"; reason: string };
 
-export function paymentConfigured(): boolean {
+function paymentConfigured(): boolean {
   return Boolean(process.env.PAYMENT_GATEWAY_KEY);
 }
 

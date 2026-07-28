@@ -68,8 +68,8 @@ function weekdayOf(ymd: YMD, timeZone: string): number {
  * lead-time cutoff and finish before the store closes. Pure — no DB, no
  * capacity; the caller subtracts already-booked orders.
  */
-export function generateSlots(now: Date, opts?: { daysAhead?: number }): SlotWindow[] {
-  const daysAhead = opts?.daysAhead ?? DELIVERY_CONFIG.slotDaysAhead;
+export function generateSlots(now: Date): SlotWindow[] {
+  const daysAhead = DELIVERY_CONFIG.slotDaysAhead;
   const windowMs = DELIVERY_CONFIG.slotWindowMinutes * MINUTE_MS;
   const earliestStartMs = now.getTime() + DELIVERY_CONFIG.leadTimeMinutes * MINUTE_MS;
 

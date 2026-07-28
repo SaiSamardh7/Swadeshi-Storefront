@@ -29,11 +29,6 @@ export function distanceFromStoreMeters(dest: LatLng): number {
   return haversineMeters(DELIVERY_CONFIG.origin, dest);
 }
 
-/** True when the destination is within the 5-mile delivery radius. */
-export function isWithinDeliveryRadius(dest: LatLng): boolean {
-  return distanceFromStoreMeters(dest) <= DELIVERY_CONFIG.radiusMeters;
-}
-
 export type EligibilityResult = {
   eligible: boolean;
   distanceMeters: number;
