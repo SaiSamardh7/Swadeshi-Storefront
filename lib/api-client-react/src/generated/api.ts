@@ -23,7 +23,12 @@ import type {
   AdminLoginInput,
   CateringRequest,
   CreateCateringRequestInput,
+  CreateDriverInput,
   CreateOrderInput,
+  DeliveryQuote,
+  DeliveryQuoteInput,
+  DeliverySlot,
+  Driver,
   ErrorResponse,
   HealthStatus,
   MenuOverride,
@@ -33,6 +38,7 @@ import type {
   RequestCodeInput,
   StoreState,
   UpdateCateringStatusInput,
+  UpdateDeliveryInput,
   UpdateMenuOverrideInput,
   UpdateOrderStatusInput,
   UpdateStoreStateInput,
@@ -506,6 +512,78 @@ export const useCreateOrder = <TError = ErrorType<ErrorResponse>,
       return useMutation(getCreateOrderMutationOptions(options));
     }
 
+export const getPayOrderUrl = (id: number,) => {
+
+
+
+
+  return `/api/orders/${id}/pay`
+}
+
+/**
+ * Charges the order total (items + delivery fee) through the payment boundary and marks it paid. Idempotent — paying an already-paid order returns it unchanged and never double-charges.
+ * @summary Pay for a pending delivery order (requires login)
+ */
+export const payOrder = async (id: number, options?: RequestInit): Promise<Order> => {
+
+  return customFetch<Order>(getPayOrderUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getPayOrderMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof payOrder>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof payOrder>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['payOrder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof payOrder>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  payOrder(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PayOrderMutationResult = NonNullable<Awaited<ReturnType<typeof payOrder>>>
+
+    export type PayOrderMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Pay for a pending delivery order (requires login)
+ */
+export const usePayOrder = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof payOrder>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof payOrder>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getPayOrderMutationOptions(options));
+    }
+
 export const getGetMyOrdersUrl = () => {
 
 
@@ -648,6 +726,156 @@ export function useGetMenuState<TData = Awaited<ReturnType<typeof getMenuState>>
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetMenuStateQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getQuoteDeliveryUrl = () => {
+
+
+
+
+  return `/api/delivery/quote`
+}
+
+/**
+ * The client sends only an address. The server geocodes it, and returns eligibility, distance, and fee — the browser never supplies coordinates, distance, or fee.
+ * @summary Check delivery eligibility and fee for an address (no login required)
+ */
+export const quoteDelivery = async (deliveryQuoteInput: DeliveryQuoteInput, options?: RequestInit): Promise<DeliveryQuote> => {
+
+  return customFetch<DeliveryQuote>(getQuoteDeliveryUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(deliveryQuoteInput)
+  }
+);}
+
+
+
+
+
+export const getQuoteDeliveryMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof quoteDelivery>>, TError,{data: BodyType<DeliveryQuoteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof quoteDelivery>>, TError,{data: BodyType<DeliveryQuoteInput>}, TContext> => {
+
+const mutationKey = ['quoteDelivery'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof quoteDelivery>>, {data: BodyType<DeliveryQuoteInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  quoteDelivery(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type QuoteDeliveryMutationResult = NonNullable<Awaited<ReturnType<typeof quoteDelivery>>>
+    export type QuoteDeliveryMutationBody = BodyType<DeliveryQuoteInput>
+    export type QuoteDeliveryMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Check delivery eligibility and fee for an address (no login required)
+ */
+export const useQuoteDelivery = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof quoteDelivery>>, TError,{data: BodyType<DeliveryQuoteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof quoteDelivery>>,
+        TError,
+        {data: BodyType<DeliveryQuoteInput>},
+        TContext
+      > => {
+      return useMutation(getQuoteDeliveryMutationOptions(options));
+    }
+
+export const getGetDeliverySlotsUrl = () => {
+
+
+
+
+  return `/api/delivery/slots`
+}
+
+/**
+ * Upcoming delivery windows with remaining capacity, derived from store hours minus the lead time, with already-booked windows removed. Empty when online ordering is paused.
+ * @summary Available scheduled delivery windows (no login required)
+ */
+export const getDeliverySlots = async ( options?: RequestInit): Promise<DeliverySlot[]> => {
+
+  return customFetch<DeliverySlot[]>(getGetDeliverySlotsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDeliverySlotsQueryKey = () => {
+    return [
+    `/api/delivery/slots`
+    ] as const;
+    }
+
+
+export const getGetDeliverySlotsQueryOptions = <TData = Awaited<ReturnType<typeof getDeliverySlots>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeliverySlots>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDeliverySlotsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeliverySlots>>> = ({ signal }) => getDeliverySlots({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDeliverySlots>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDeliverySlotsQueryResult = NonNullable<Awaited<ReturnType<typeof getDeliverySlots>>>
+export type GetDeliverySlotsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Available scheduled delivery windows (no login required)
+ */
+
+export function useGetDeliverySlots<TData = Awaited<ReturnType<typeof getDeliverySlots>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeliverySlots>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDeliverySlotsQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -1312,5 +1540,225 @@ export const useUpdateStoreState = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getUpdateStoreStateMutationOptions(options));
+    }
+
+export const getGetAdminDriversUrl = () => {
+
+
+
+
+  return `/api/admin/drivers`
+}
+
+/**
+ * @summary List delivery drivers (requires staff login)
+ */
+export const getAdminDrivers = async ( options?: RequestInit): Promise<Driver[]> => {
+
+  return customFetch<Driver[]>(getGetAdminDriversUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminDriversQueryKey = () => {
+    return [
+    `/api/admin/drivers`
+    ] as const;
+    }
+
+
+export const getGetAdminDriversQueryOptions = <TData = Awaited<ReturnType<typeof getAdminDrivers>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminDrivers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminDriversQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminDrivers>>> = ({ signal }) => getAdminDrivers({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminDrivers>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminDriversQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminDrivers>>>
+export type GetAdminDriversQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary List delivery drivers (requires staff login)
+ */
+
+export function useGetAdminDrivers<TData = Awaited<ReturnType<typeof getAdminDrivers>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminDrivers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminDriversQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateDriverUrl = () => {
+
+
+
+
+  return `/api/admin/drivers`
+}
+
+/**
+ * @summary Add a delivery driver (requires staff login)
+ */
+export const createDriver = async (createDriverInput: CreateDriverInput, options?: RequestInit): Promise<Driver> => {
+
+  return customFetch<Driver>(getCreateDriverUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createDriverInput)
+  }
+);}
+
+
+
+
+
+export const getCreateDriverMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDriver>>, TError,{data: BodyType<CreateDriverInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createDriver>>, TError,{data: BodyType<CreateDriverInput>}, TContext> => {
+
+const mutationKey = ['createDriver'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDriver>>, {data: BodyType<CreateDriverInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createDriver(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateDriverMutationResult = NonNullable<Awaited<ReturnType<typeof createDriver>>>
+    export type CreateDriverMutationBody = BodyType<CreateDriverInput>
+    export type CreateDriverMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Add a delivery driver (requires staff login)
+ */
+export const useCreateDriver = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDriver>>, TError,{data: BodyType<CreateDriverInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createDriver>>,
+        TError,
+        {data: BodyType<CreateDriverInput>},
+        TContext
+      > => {
+      return useMutation(getCreateDriverMutationOptions(options));
+    }
+
+export const getUpdateOrderDeliveryUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/orders/${id}/delivery`
+}
+
+/**
+ * @summary Assign a driver and set delivery status (requires staff login)
+ */
+export const updateOrderDelivery = async (id: number,
+    updateDeliveryInput: UpdateDeliveryInput, options?: RequestInit): Promise<Order> => {
+
+  return customFetch<Order>(getUpdateOrderDeliveryUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateDeliveryInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateOrderDeliveryMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateOrderDelivery>>, TError,{id: number;data: BodyType<UpdateDeliveryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateOrderDelivery>>, TError,{id: number;data: BodyType<UpdateDeliveryInput>}, TContext> => {
+
+const mutationKey = ['updateOrderDelivery'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateOrderDelivery>>, {id: number;data: BodyType<UpdateDeliveryInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateOrderDelivery(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateOrderDeliveryMutationResult = NonNullable<Awaited<ReturnType<typeof updateOrderDelivery>>>
+    export type UpdateOrderDeliveryMutationBody = BodyType<UpdateDeliveryInput>
+    export type UpdateOrderDeliveryMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Assign a driver and set delivery status (requires staff login)
+ */
+export const useUpdateOrderDelivery = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateOrderDelivery>>, TError,{id: number;data: BodyType<UpdateDeliveryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateOrderDelivery>>,
+        TError,
+        {id: number;data: BodyType<UpdateDeliveryInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateOrderDeliveryMutationOptions(options));
     }
 

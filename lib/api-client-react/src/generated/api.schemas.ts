@@ -64,21 +64,89 @@ export const OrderStatus = {
   picked_up: 'picked_up',
 } as const;
 
+export type FulfillmentType = typeof FulfillmentType[keyof typeof FulfillmentType];
+
+
+export const FulfillmentType = {
+  pickup: 'pickup',
+  delivery: 'delivery',
+} as const;
+
+export type PaymentStatus = typeof PaymentStatus[keyof typeof PaymentStatus];
+
+
+export const PaymentStatus = {
+  pending: 'pending',
+  paid: 'paid',
+  failed: 'failed',
+} as const;
+
+export type DeliveryStatus = typeof DeliveryStatus[keyof typeof DeliveryStatus];
+
+
+export const DeliveryStatus = {
+  unassigned: 'unassigned',
+  assigned: 'assigned',
+  out_for_delivery: 'out_for_delivery',
+  delivered: 'delivered',
+} as const;
+
+/**
+ * Delivery details attached to a delivery order.
+ */
+export interface OrderDelivery {
+  line1: string;
+  line2?: string | null;
+  city: string;
+  state: string;
+  zip: string;
+  distanceMeters: number;
+  deliveryFeeCents: number;
+  deliveryStatus: DeliveryStatus;
+  driverId: number | null;
+  driverName: string | null;
+}
+
 export interface Order {
   id: number;
   status: OrderStatus;
+  fulfillmentType: FulfillmentType;
   pickupName: string;
   note?: string | null;
   subtotalCents: number;
-  pickupEta: string;
+  pickupEta?: string | null;
+  scheduledFor?: string | null;
+  paymentStatus: PaymentStatus;
   createdAt: string;
   items: OrderItem[];
+  delivery: OrderDelivery | null;
 }
 
+/**
+ * A US delivery address to check against the delivery radius.
+ */
+export interface DeliveryQuoteInput {
+  /** @minLength 1 */
+  line1: string;
+  line2?: string;
+  /** @minLength 1 */
+  city: string;
+  /** @minLength 2 */
+  state: string;
+  /** @minLength 5 */
+  zip: string;
+}
+
+/**
+ * fulfillmentType defaults to pickup. For delivery, address and scheduledFor are required and re-validated server-side (eligibility, minimum order, slot availability) — the browser's fee/distance are never trusted.
+ */
 export interface CreateOrderInput {
+  fulfillmentType?: FulfillmentType;
   /** @minLength 1 */
   pickupName: string;
   note?: string;
+  address?: DeliveryQuoteInput;
+  scheduledFor?: string;
   /** @minItems 1 */
   items: OrderItemInput[];
 }
@@ -112,6 +180,25 @@ export interface StoreState {
 
 export interface UpdateStoreStateInput {
   orderingPaused: boolean;
+}
+
+/**
+ * Server-authoritative delivery quote. distanceMeters and deliveryFeeCents are computed on the server; eligible is false when the address is outside the delivery radius.
+ */
+export interface DeliveryQuote {
+  eligible: boolean;
+  distanceMeters: number;
+  deliveryFeeCents: number;
+  minimumOrderCents: number;
+}
+
+/**
+ * A bookable delivery window with its remaining capacity.
+ */
+export interface DeliverySlot {
+  startsAt: string;
+  endsAt: string;
+  remaining: number;
 }
 
 export type TraySize = typeof TraySize[keyof typeof TraySize];
@@ -171,6 +258,7 @@ export interface CreateCateringRequestInput {
   name: string;
   /** @minLength 1 */
   phone: string;
+  /** @pattern ^[^@\s]+@[^@\s]+\.[^@\s]+$ */
   email: string;
   /** @minLength 1 */
   eventDate: string;
@@ -193,5 +281,27 @@ export interface AdminLoginInput {
 
 export interface UpdateOrderStatusInput {
   status: OrderStatus;
+}
+
+export interface Driver {
+  id: number;
+  name: string;
+  phone: string;
+  active: boolean;
+}
+
+export interface CreateDriverInput {
+  /** @minLength 1 */
+  name: string;
+  /** @minLength 1 */
+  phone: string;
+}
+
+/**
+ * Assign (or clear) a driver and set the delivery status.
+ */
+export interface UpdateDeliveryInput {
+  driverId?: number | null;
+  deliveryStatus: DeliveryStatus;
 }
 

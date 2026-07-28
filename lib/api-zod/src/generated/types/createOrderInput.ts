@@ -5,12 +5,20 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { DeliveryQuoteInput } from './deliveryQuoteInput';
+import type { FulfillmentType } from './fulfillmentType';
 import type { OrderItemInput } from './orderItemInput';
 
+/**
+ * fulfillmentType defaults to pickup. For delivery, address and scheduledFor are required and re-validated server-side (eligibility, minimum order, slot availability) — the browser's fee/distance are never trusted.
+ */
 export interface CreateOrderInput {
+  fulfillmentType?: FulfillmentType;
   /** @minLength 1 */
   pickupName: string;
   note?: string;
+  address?: DeliveryQuoteInput;
+  scheduledFor?: Date;
   /** @minItems 1 */
   items: OrderItemInput[];
 }

@@ -5,16 +5,23 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { FulfillmentType } from './fulfillmentType';
+import type { OrderDelivery } from './orderDelivery';
 import type { OrderItem } from './orderItem';
 import type { OrderStatus } from './orderStatus';
+import type { PaymentStatus } from './paymentStatus';
 
 export interface Order {
   id: number;
   status: OrderStatus;
+  fulfillmentType: FulfillmentType;
   pickupName: string;
   note?: string | null;
   subtotalCents: number;
-  pickupEta: Date;
+  pickupEta?: Date | null;
+  scheduledFor?: Date | null;
+  paymentStatus: PaymentStatus;
   createdAt: Date;
   items: OrderItem[];
+  delivery: OrderDelivery | null;
 }
