@@ -10,6 +10,9 @@
       "path": "./lib/menu"
     },
     {
+      "path": "./lib/delivery"
+    },
+    {
       "path": "./lib/api-client-react"
     },
     {
