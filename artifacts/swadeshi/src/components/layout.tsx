@@ -25,6 +25,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
               <Link href="/" className={`transition-colors hover:text-primary ${location === '/' ? 'text-primary' : 'text-foreground/80'}`}>Home</Link>
               <Link href="/menu" className={`transition-colors hover:text-primary ${location === '/menu' ? 'text-primary' : 'text-foreground/80'}`}>Menu</Link>
+              <Link href="/delivery" className={`transition-colors hover:text-primary ${location === '/delivery' ? 'text-primary' : 'text-foreground/80'}`}>Delivery</Link>
               <Link href="/grocery-halal" className={`transition-colors hover:text-primary ${location === '/grocery-halal' ? 'text-primary' : 'text-foreground/80'}`}>Grocery & Halal</Link>
               <Link href="/catering" className={`transition-colors hover:text-primary ${location === '/catering' ? 'text-primary' : 'text-foreground/80'}`}>Catering</Link>
             </nav>

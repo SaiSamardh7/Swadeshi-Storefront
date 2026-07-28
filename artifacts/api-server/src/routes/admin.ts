@@ -16,6 +16,12 @@ import {
   UpdateCateringStatusParams,
   UpdateCateringStatusBody,
   UpdateCateringStatusResponse,
+  GetAdminDriversResponse,
+  CreateDriverBody,
+  CreateDriverResponse,
+  UpdateOrderDeliveryParams,
+  UpdateOrderDeliveryBody,
+  UpdateOrderDeliveryResponse,
 } from "@workspace/api-zod";
 import {
   db,
@@ -23,9 +29,12 @@ import {
   orderItemsTable,
   cateringRequestsTable,
   cateringRequestItemsTable,
+  driversTable,
+  orderDeliveriesTable,
 } from "@workspace/db";
 import { getMenuItem } from "@workspace/menu";
 import { setMenuOverride, setOrderingPaused } from "../lib/store-state";
+import { deliveriesByOrderId } from "../lib/order-delivery";
 import {
   adminConfigured,
   checkPassword,
@@ -58,10 +67,11 @@ router.get("/admin/orders", async (req, res) => {
   }
 
   const orders = await db.select().from(ordersTable).orderBy(desc(ordersTable.createdAt));
+  const deliveries = await deliveriesByOrderId(orders.map((o) => o.id));
   const withItems = await Promise.all(
     orders.map(async (order) => {
       const items = await db.select().from(orderItemsTable).where(eq(orderItemsTable.orderId, order.id));
-      return { ...order, items };
+      return { ...order, items, delivery: deliveries.get(order.id) ?? null };
     }),
   );
 
@@ -93,7 +103,8 @@ router.post("/admin/orders/:id/status", async (req, res) => {
   }
 
   const items = await db.select().from(orderItemsTable).where(eq(orderItemsTable.orderId, order.id));
-  res.json(UpdateOrderStatusResponse.parse({ ...order, items }));
+  const deliveries = await deliveriesByOrderId([order.id]);
+  res.json(UpdateOrderStatusResponse.parse({ ...order, items, delivery: deliveries.get(order.id) ?? null }));
 });
 
 router.put("/admin/menu/overrides/:itemId", async (req, res) => {
@@ -191,6 +202,84 @@ router.post("/admin/catering/:id/status", async (req, res) => {
     .where(eq(cateringRequestItemsTable.requestId, request.id));
 
   res.json(UpdateCateringStatusResponse.parse({ ...request, items }));
+});
+
+router.get("/admin/drivers", async (req, res) => {
+  if (!isAdmin(req)) {
+    res.status(401).json({ error: "Staff login required." });
+    return;
+  }
+  const drivers = await db.select().from(driversTable).orderBy(driversTable.name);
+  res.json(GetAdminDriversResponse.parse(drivers));
+});
+
+router.post("/admin/drivers", async (req, res) => {
+  if (!isAdmin(req)) {
+    res.status(401).json({ error: "Staff login required." });
+    return;
+  }
+  const body = CreateDriverBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: "Enter a driver name and phone." });
+    return;
+  }
+  const [driver] = await db
+    .insert(driversTable)
+    .values({ name: body.data.name, phone: body.data.phone })
+    .returning();
+  res.status(201).json(CreateDriverResponse.parse(driver));
+});
+
+router.post("/admin/orders/:id/delivery", async (req, res) => {
+  if (!isAdmin(req)) {
+    res.status(401).json({ error: "Staff login required." });
+    return;
+  }
+
+  const params = UpdateOrderDeliveryParams.safeParse(req.params);
+  const body = UpdateOrderDeliveryBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({ error: "Invalid order id or delivery update." });
+    return;
+  }
+
+  const [order] = await db.select().from(ordersTable).where(eq(ordersTable.id, params.data.id)).limit(1);
+  if (!order) {
+    res.status(404).json({ error: "Order not found." });
+    return;
+  }
+  if (order.fulfillmentType !== "delivery") {
+    res.status(400).json({ error: "That order is not a delivery order." });
+    return;
+  }
+
+  const [existing] = await db
+    .select()
+    .from(orderDeliveriesTable)
+    .where(eq(orderDeliveriesTable.orderId, order.id))
+    .limit(1);
+  if (!existing) {
+    res.status(404).json({ error: "No delivery details for this order." });
+    return;
+  }
+
+  const driverId = body.data.driverId ?? null;
+  if (driverId !== null) {
+    const [driver] = await db.select().from(driversTable).where(eq(driversTable.id, driverId)).limit(1);
+    if (!driver) {
+      res.status(404).json({ error: "Driver not found." });
+      return;
+    }
+  }
+
+  await db
+    .update(orderDeliveriesTable)
+    .set({ driverId, deliveryStatus: body.data.deliveryStatus, updatedAt: new Date() })
+    .where(eq(orderDeliveriesTable.orderId, order.id));
+
+  const items = await db.select().from(orderItemsTable).where(eq(orderItemsTable.orderId, order.id));
+  const delivery = (await deliveriesByOrderId([order.id])).get(order.id) ?? null;
+  res.json(UpdateOrderDeliveryResponse.parse({ ...order, items, delivery }));
 });
 
 export default router;

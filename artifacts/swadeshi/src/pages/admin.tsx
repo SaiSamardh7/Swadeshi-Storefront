@@ -14,14 +14,20 @@ import {
   useUpdateStoreState,
   useGetAdminCateringRequests,
   useUpdateCateringStatus,
+  useGetAdminDrivers,
+  useCreateDriver,
+  useUpdateOrderDelivery,
   getGetAdminOrdersQueryKey,
   getGetMenuStateQueryKey,
   getGetAdminCateringRequestsQueryKey,
+  getGetAdminDriversQueryKey,
   type Order,
   type OrderStatus,
   type MenuOverride,
   type CateringRequest,
   type CateringStatus,
+  type Driver,
+  type DeliveryStatus,
 } from "@workspace/api-client-react";
 import { queryClient } from "@/lib/query-client";
 import { formatCents } from "@/lib/utils";
@@ -39,6 +45,20 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
   ready: "Ready for pickup",
   picked_up: "Picked up",
 };
+
+const DELIVERY_STATUS_LABEL: Record<DeliveryStatus, string> = {
+  unassigned: "Unassigned",
+  assigned: "Assigned",
+  out_for_delivery: "Out for delivery",
+  delivered: "Delivered",
+};
+
+const DELIVERY_STATUS_FLOW: DeliveryStatus[] = [
+  "unassigned",
+  "assigned",
+  "out_for_delivery",
+  "delivered",
+];
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString("en-US", {
@@ -65,9 +85,79 @@ function chicagoDayKey(iso: string): string {
 // Orders tab
 // ---------------------------------------------------------------------------
 
-function OrderCard({ order }: { order: Order }) {
+function DeliveryControls({ order, drivers }: { order: Order; drivers: Driver[] }) {
+  const update = useUpdateOrderDelivery();
+  const delivery = order.delivery;
+  if (!delivery) return null;
+
+  function submit(driverId: number | null, deliveryStatus: DeliveryStatus) {
+    update.mutate(
+      { id: order.id, data: { driverId, deliveryStatus } },
+      { onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetAdminOrdersQueryKey() }) },
+    );
+  }
+
+  return (
+    <div className="mt-3 rounded-lg border bg-muted/40 p-3 text-sm">
+      <p className="font-medium">
+        Deliver to {delivery.line1}
+        {delivery.line2 ? `, ${delivery.line2}` : ""}, {delivery.city} {delivery.zip}
+      </p>
+      <p className="text-xs text-muted-foreground">
+        {(delivery.distanceMeters / 1609.344).toFixed(1)} mi · fee {formatCents(delivery.deliveryFeeCents)}
+      </p>
+
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <label className="text-xs text-muted-foreground" htmlFor={`driver-${order.id}`}>
+          Driver
+        </label>
+        <select
+          id={`driver-${order.id}`}
+          className="h-8 rounded-md border bg-background px-2 text-sm"
+          value={delivery.driverId ?? ""}
+          disabled={update.isPending}
+          onChange={(e) => {
+            const driverId = e.target.value ? Number(e.target.value) : null;
+            const nextStatus: DeliveryStatus =
+              driverId && delivery.deliveryStatus === "unassigned" ? "assigned" : delivery.deliveryStatus;
+            submit(driverId, nextStatus);
+          }}
+        >
+          <option value="">Unassigned</option>
+          {drivers.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mt-2 flex flex-wrap gap-1">
+        {DELIVERY_STATUS_FLOW.map((s) => (
+          <button
+            key={s}
+            type="button"
+            disabled={update.isPending}
+            onClick={() => submit(delivery.driverId ?? null, s)}
+            className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+              delivery.deliveryStatus === s
+                ? "border-primary bg-primary text-primary-foreground"
+                : "hover:bg-accent"
+            }`}
+          >
+            {DELIVERY_STATUS_LABEL[s]}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function OrderCard({ order, drivers }: { order: Order; drivers: Driver[] }) {
   const updateStatus = useUpdateOrderStatus();
   const next = NEXT_STATUS[order.status];
+  const isDelivery = order.fulfillmentType === "delivery";
+  const total = order.subtotalCents + (order.delivery?.deliveryFeeCents ?? 0);
 
   return (
     <Card className="p-4">
@@ -75,9 +165,17 @@ function OrderCard({ order }: { order: Order }) {
         <div>
           <p className="font-bold">
             #{order.id} — {order.pickupName}
+            {isDelivery && (
+              <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                Delivery
+              </span>
+            )}
           </p>
           <p className="text-xs text-muted-foreground">
-            Placed {formatTime(order.createdAt)} · pickup by {formatTime(order.pickupEta)}
+            Placed {formatTime(order.createdAt)} ·{" "}
+            {isDelivery
+              ? `delivery ${order.scheduledFor ? formatTime(order.scheduledFor) : ""}`
+              : `pickup by ${order.pickupEta ? formatTime(order.pickupEta) : "ASAP"}`}
           </p>
         </div>
         <span className="shrink-0 rounded-full bg-muted px-3 py-1 text-xs font-semibold">
@@ -93,7 +191,19 @@ function OrderCard({ order }: { order: Order }) {
         ))}
       </ul>
       {order.note && <p className="mt-2 text-sm italic text-muted-foreground">Note: {order.note}</p>}
-      <p className="mt-2 font-semibold">{formatCents(order.subtotalCents)} · pay at pickup</p>
+
+      {isDelivery ? (
+        <p className="mt-2 font-semibold">
+          {formatCents(total)} ·{" "}
+          <span className={order.paymentStatus === "paid" ? "text-green-600" : "text-destructive"}>
+            {order.paymentStatus === "paid" ? "Paid" : "Payment pending"}
+          </span>
+        </p>
+      ) : (
+        <p className="mt-2 font-semibold">{formatCents(order.subtotalCents)} · pay at pickup</p>
+      )}
+
+      {isDelivery && <DeliveryControls order={order} drivers={drivers} />}
 
       {next && (
         <Button
@@ -114,7 +224,7 @@ function OrderCard({ order }: { order: Order }) {
   );
 }
 
-function OrdersTab({ orders }: { orders: Order[] }) {
+function OrdersTab({ orders, drivers }: { orders: Order[]; drivers: Driver[] }) {
   const [showHistory, setShowHistory] = useState(false);
 
   const todayKey = chicagoDayKey(new Date().toISOString());
@@ -146,7 +256,7 @@ function OrdersTab({ orders }: { orders: Order[] }) {
       ) : (
         <div className="space-y-3">
           {active.map((order) => (
-            <OrderCard key={order.id} order={order} />
+            <OrderCard key={order.id} order={order} drivers={drivers} />
           ))}
         </div>
       )}
@@ -453,6 +563,68 @@ function CateringTab({ requests }: { requests: CateringRequest[] }) {
 }
 
 // ---------------------------------------------------------------------------
+// Drivers tab
+// ---------------------------------------------------------------------------
+
+function DriversTab({ drivers }: { drivers: Driver[] }) {
+  const createDriver = useCreateDriver();
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  function add(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!name.trim() || !phone.trim()) {
+      setError("Enter a name and phone.");
+      return;
+    }
+    createDriver.mutate(
+      { data: { name: name.trim(), phone: phone.trim() } },
+      {
+        onSuccess: () => {
+          setName("");
+          setPhone("");
+          queryClient.invalidateQueries({ queryKey: getGetAdminDriversQueryKey() });
+        },
+        onError: () => setError("Couldn't add that driver."),
+      },
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card className="p-4">
+        <p className="mb-3 font-semibold">Add a driver</p>
+        <form onSubmit={add} className="flex flex-col gap-2 sm:flex-row">
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" aria-label="Driver name" />
+          <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone" aria-label="Driver phone" />
+          <Button type="submit" className="rounded-full" disabled={createDriver.isPending}>
+            {createDriver.isPending ? "Adding…" : "Add"}
+          </Button>
+        </form>
+        {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+      </Card>
+
+      {drivers.length === 0 ? (
+        <p className="text-muted-foreground">No drivers yet. Add one above before assigning deliveries.</p>
+      ) : (
+        <ul className="space-y-2">
+          {drivers.map((d) => (
+            <li key={d.id} className="flex items-center justify-between rounded-lg border p-3 text-sm">
+              <span className="font-medium">{d.name}</span>
+              <a href={`tel:${d.phone}`} className="text-primary hover:underline">
+                {d.phone}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Store tab
 // ---------------------------------------------------------------------------
 
@@ -492,7 +664,7 @@ function StoreTab({ orderingPaused }: { orderingPaused: boolean }) {
 // Page
 // ---------------------------------------------------------------------------
 
-const TABS = ["Orders", "Menu", "Catering", "Store"] as const;
+const TABS = ["Orders", "Menu", "Catering", "Drivers", "Store"] as const;
 type Tab = (typeof TABS)[number];
 
 export default function Admin() {
@@ -510,6 +682,9 @@ export default function Admin() {
   });
   const cateringRequests = useGetAdminCateringRequests({
     query: { queryKey: getGetAdminCateringRequestsQueryKey(), refetchInterval: 60000, retry: false },
+  });
+  const drivers = useGetAdminDrivers({
+    query: { queryKey: getGetAdminDriversQueryKey(), refetchInterval: 60000, retry: false },
   });
 
   function handleLogin(e: React.FormEvent) {
@@ -590,7 +765,7 @@ export default function Admin() {
         (orders.isLoading ? (
           <p className="text-muted-foreground">Loading…</p>
         ) : (
-          <OrdersTab orders={orders.data ?? []} />
+          <OrdersTab orders={orders.data ?? []} drivers={drivers.data ?? []} />
         ))}
       {tab === "Menu" &&
         (menuState.isLoading ? (
@@ -603,6 +778,12 @@ export default function Admin() {
           <p className="text-muted-foreground">Loading…</p>
         ) : (
           <CateringTab requests={cateringRequests.data ?? []} />
+        ))}
+      {tab === "Drivers" &&
+        (drivers.isLoading ? (
+          <p className="text-muted-foreground">Loading…</p>
+        ) : (
+          <DriversTab drivers={drivers.data ?? []} />
         ))}
       {tab === "Store" && <StoreTab orderingPaused={menuState.data?.orderingPaused ?? false} />}
     </div>

@@ -12,6 +12,7 @@ export interface CreateCateringRequestInput {
   name: string;
   /** @minLength 1 */
   phone: string;
+  /** @pattern ^[^@\s]+@[^@\s]+\.[^@\s]+$ */
   email: string;
   /** @minLength 1 */
   eventDate: string;

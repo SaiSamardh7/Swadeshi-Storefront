@@ -72,24 +72,42 @@ export const LogoutResponse = zod.object({
 
 
 
+export const createOrderBodyAddressStateMin = 2;
+
+export const createOrderBodyAddressZipMin = 5;
+
+
+
 
 
 export const CreateOrderBody = zod.object({
+  "fulfillmentType": zod.enum(['pickup', 'delivery']).optional(),
   "pickupName": zod.string().min(1),
   "note": zod.string().optional(),
+  "address": zod.object({
+  "line1": zod.string().min(1),
+  "line2": zod.string().optional(),
+  "city": zod.string().min(1),
+  "state": zod.string().min(createOrderBodyAddressStateMin),
+  "zip": zod.string().min(createOrderBodyAddressZipMin)
+}).optional().describe('A US delivery address to check against the delivery radius.'),
+  "scheduledFor": zod.coerce.date().optional(),
   "items": zod.array(zod.object({
   "itemId": zod.string(),
   "qty": zod.number().min(1)
 }).describe('Only itemId + qty — name and price are looked up server-side from the menu catalog, never trusted from the client.')).min(1)
-})
+}).describe('fulfillmentType defaults to pickup. For delivery, address and scheduledFor are required and re-validated server-side (eligibility, minimum order, slot availability) — the browser\'s fee\/distance are never trusted.')
 
 export const CreateOrderResponse = zod.object({
   "id": zod.number(),
   "status": zod.enum(['new', 'preparing', 'ready', 'picked_up']),
+  "fulfillmentType": zod.enum(['pickup', 'delivery']),
   "pickupName": zod.string(),
   "note": zod.string().nullish(),
   "subtotalCents": zod.number(),
-  "pickupEta": zod.coerce.date(),
+  "pickupEta": zod.coerce.date().nullish(),
+  "scheduledFor": zod.coerce.date().nullish(),
+  "paymentStatus": zod.enum(['pending', 'paid', 'failed']),
   "createdAt": zod.coerce.date(),
   "items": zod.array(zod.object({
   "id": zod.number(),
@@ -97,7 +115,60 @@ export const CreateOrderResponse = zod.object({
   "name": zod.string(),
   "unitPriceCents": zod.number(),
   "qty": zod.number()
-}))
+})),
+  "delivery": zod.union([zod.object({
+  "line1": zod.string(),
+  "line2": zod.string().nullish(),
+  "city": zod.string(),
+  "state": zod.string(),
+  "zip": zod.string(),
+  "distanceMeters": zod.number(),
+  "deliveryFeeCents": zod.number(),
+  "deliveryStatus": zod.enum(['unassigned', 'assigned', 'out_for_delivery', 'delivered']),
+  "driverId": zod.number().nullable(),
+  "driverName": zod.string().nullable()
+}).describe('Delivery details attached to a delivery order.'),zod.null()])
+})
+
+
+/**
+ * Charges the order total (items + delivery fee) through the payment boundary and marks it paid. Idempotent — paying an already-paid order returns it unchanged and never double-charges.
+ * @summary Pay for a pending delivery order (requires login)
+ */
+export const PayOrderParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const PayOrderResponse = zod.object({
+  "id": zod.number(),
+  "status": zod.enum(['new', 'preparing', 'ready', 'picked_up']),
+  "fulfillmentType": zod.enum(['pickup', 'delivery']),
+  "pickupName": zod.string(),
+  "note": zod.string().nullish(),
+  "subtotalCents": zod.number(),
+  "pickupEta": zod.coerce.date().nullish(),
+  "scheduledFor": zod.coerce.date().nullish(),
+  "paymentStatus": zod.enum(['pending', 'paid', 'failed']),
+  "createdAt": zod.coerce.date(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "itemId": zod.string(),
+  "name": zod.string(),
+  "unitPriceCents": zod.number(),
+  "qty": zod.number()
+})),
+  "delivery": zod.union([zod.object({
+  "line1": zod.string(),
+  "line2": zod.string().nullish(),
+  "city": zod.string(),
+  "state": zod.string(),
+  "zip": zod.string(),
+  "distanceMeters": zod.number(),
+  "deliveryFeeCents": zod.number(),
+  "deliveryStatus": zod.enum(['unassigned', 'assigned', 'out_for_delivery', 'delivered']),
+  "driverId": zod.number().nullable(),
+  "driverName": zod.string().nullable()
+}).describe('Delivery details attached to a delivery order.'),zod.null()])
 })
 
 
@@ -107,10 +178,13 @@ export const CreateOrderResponse = zod.object({
 export const GetMyOrdersResponseItem = zod.object({
   "id": zod.number(),
   "status": zod.enum(['new', 'preparing', 'ready', 'picked_up']),
+  "fulfillmentType": zod.enum(['pickup', 'delivery']),
   "pickupName": zod.string(),
   "note": zod.string().nullish(),
   "subtotalCents": zod.number(),
-  "pickupEta": zod.coerce.date(),
+  "pickupEta": zod.coerce.date().nullish(),
+  "scheduledFor": zod.coerce.date().nullish(),
+  "paymentStatus": zod.enum(['pending', 'paid', 'failed']),
   "createdAt": zod.coerce.date(),
   "items": zod.array(zod.object({
   "id": zod.number(),
@@ -118,7 +192,19 @@ export const GetMyOrdersResponseItem = zod.object({
   "name": zod.string(),
   "unitPriceCents": zod.number(),
   "qty": zod.number()
-}))
+})),
+  "delivery": zod.union([zod.object({
+  "line1": zod.string(),
+  "line2": zod.string().nullish(),
+  "city": zod.string(),
+  "state": zod.string(),
+  "zip": zod.string(),
+  "distanceMeters": zod.number(),
+  "deliveryFeeCents": zod.number(),
+  "deliveryStatus": zod.enum(['unassigned', 'assigned', 'out_for_delivery', 'delivered']),
+  "driverId": zod.number().nullable(),
+  "driverName": zod.string().nullable()
+}).describe('Delivery details attached to a delivery order.'),zod.null()])
 })
 export const GetMyOrdersResponse = zod.array(GetMyOrdersResponseItem)
 
@@ -137,10 +223,51 @@ export const GetMenuStateResponse = zod.object({
 
 
 /**
+ * The client sends only an address. The server geocodes it, and returns eligibility, distance, and fee — the browser never supplies coordinates, distance, or fee.
+ * @summary Check delivery eligibility and fee for an address (no login required)
+ */
+
+
+export const quoteDeliveryBodyStateMin = 2;
+
+export const quoteDeliveryBodyZipMin = 5;
+
+
+
+export const QuoteDeliveryBody = zod.object({
+  "line1": zod.string().min(1),
+  "line2": zod.string().optional(),
+  "city": zod.string().min(1),
+  "state": zod.string().min(quoteDeliveryBodyStateMin),
+  "zip": zod.string().min(quoteDeliveryBodyZipMin)
+}).describe('A US delivery address to check against the delivery radius.')
+
+export const QuoteDeliveryResponse = zod.object({
+  "eligible": zod.boolean(),
+  "distanceMeters": zod.number(),
+  "deliveryFeeCents": zod.number(),
+  "minimumOrderCents": zod.number()
+}).describe('Server-authoritative delivery quote. distanceMeters and deliveryFeeCents are computed on the server; eligible is false when the address is outside the delivery radius.')
+
+
+/**
+ * Upcoming delivery windows with remaining capacity, derived from store hours minus the lead time, with already-booked windows removed. Empty when online ordering is paused.
+ * @summary Available scheduled delivery windows (no login required)
+ */
+export const GetDeliverySlotsResponseItem = zod.object({
+  "startsAt": zod.coerce.date(),
+  "endsAt": zod.coerce.date(),
+  "remaining": zod.number()
+}).describe('A bookable delivery window with its remaining capacity.')
+export const GetDeliverySlotsResponse = zod.array(GetDeliverySlotsResponseItem)
+
+
+/**
  * @summary Submit a catering quote request (no login required)
  */
 
 
+export const createCateringRequestBodyEmailRegExp = new RegExp('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$');
 
 
 
@@ -151,7 +278,7 @@ export const GetMenuStateResponse = zod.object({
 export const CreateCateringRequestBody = zod.object({
   "name": zod.string().min(1),
   "phone": zod.string().min(1),
-  "email": zod.string().regex(new RegExp('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')),
+  "email": zod.string().regex(createCateringRequestBodyEmailRegExp),
   "eventDate": zod.string().min(1),
   "eventType": zod.string().min(1),
   "guestCount": zod.number().min(1),
@@ -273,10 +400,13 @@ export const AdminLogoutResponse = zod.object({
 export const GetAdminOrdersResponseItem = zod.object({
   "id": zod.number(),
   "status": zod.enum(['new', 'preparing', 'ready', 'picked_up']),
+  "fulfillmentType": zod.enum(['pickup', 'delivery']),
   "pickupName": zod.string(),
   "note": zod.string().nullish(),
   "subtotalCents": zod.number(),
-  "pickupEta": zod.coerce.date(),
+  "pickupEta": zod.coerce.date().nullish(),
+  "scheduledFor": zod.coerce.date().nullish(),
+  "paymentStatus": zod.enum(['pending', 'paid', 'failed']),
   "createdAt": zod.coerce.date(),
   "items": zod.array(zod.object({
   "id": zod.number(),
@@ -284,7 +414,19 @@ export const GetAdminOrdersResponseItem = zod.object({
   "name": zod.string(),
   "unitPriceCents": zod.number(),
   "qty": zod.number()
-}))
+})),
+  "delivery": zod.union([zod.object({
+  "line1": zod.string(),
+  "line2": zod.string().nullish(),
+  "city": zod.string(),
+  "state": zod.string(),
+  "zip": zod.string(),
+  "distanceMeters": zod.number(),
+  "deliveryFeeCents": zod.number(),
+  "deliveryStatus": zod.enum(['unassigned', 'assigned', 'out_for_delivery', 'delivered']),
+  "driverId": zod.number().nullable(),
+  "driverName": zod.string().nullable()
+}).describe('Delivery details attached to a delivery order.'),zod.null()])
 })
 export const GetAdminOrdersResponse = zod.array(GetAdminOrdersResponseItem)
 
@@ -303,10 +445,13 @@ export const UpdateOrderStatusBody = zod.object({
 export const UpdateOrderStatusResponse = zod.object({
   "id": zod.number(),
   "status": zod.enum(['new', 'preparing', 'ready', 'picked_up']),
+  "fulfillmentType": zod.enum(['pickup', 'delivery']),
   "pickupName": zod.string(),
   "note": zod.string().nullish(),
   "subtotalCents": zod.number(),
-  "pickupEta": zod.coerce.date(),
+  "pickupEta": zod.coerce.date().nullish(),
+  "scheduledFor": zod.coerce.date().nullish(),
+  "paymentStatus": zod.enum(['pending', 'paid', 'failed']),
   "createdAt": zod.coerce.date(),
   "items": zod.array(zod.object({
   "id": zod.number(),
@@ -314,7 +459,19 @@ export const UpdateOrderStatusResponse = zod.object({
   "name": zod.string(),
   "unitPriceCents": zod.number(),
   "qty": zod.number()
-}))
+})),
+  "delivery": zod.union([zod.object({
+  "line1": zod.string(),
+  "line2": zod.string().nullish(),
+  "city": zod.string(),
+  "state": zod.string(),
+  "zip": zod.string(),
+  "distanceMeters": zod.number(),
+  "deliveryFeeCents": zod.number(),
+  "deliveryStatus": zod.enum(['unassigned', 'assigned', 'out_for_delivery', 'delivered']),
+  "driverId": zod.number().nullable(),
+  "driverName": zod.string().nullable()
+}).describe('Delivery details attached to a delivery order.'),zod.null()])
 })
 
 
@@ -349,6 +506,83 @@ export const UpdateStoreStateBody = zod.object({
 
 export const UpdateStoreStateResponse = zod.object({
   "orderingPaused": zod.boolean()
+})
+
+
+/**
+ * @summary List delivery drivers (requires staff login)
+ */
+export const GetAdminDriversResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "phone": zod.string(),
+  "active": zod.boolean()
+})
+export const GetAdminDriversResponse = zod.array(GetAdminDriversResponseItem)
+
+
+/**
+ * @summary Add a delivery driver (requires staff login)
+ */
+
+
+
+
+export const CreateDriverBody = zod.object({
+  "name": zod.string().min(1),
+  "phone": zod.string().min(1)
+})
+
+export const CreateDriverResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "phone": zod.string(),
+  "active": zod.boolean()
+})
+
+
+/**
+ * @summary Assign a driver and set delivery status (requires staff login)
+ */
+export const UpdateOrderDeliveryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateOrderDeliveryBody = zod.object({
+  "driverId": zod.number().nullish(),
+  "deliveryStatus": zod.enum(['unassigned', 'assigned', 'out_for_delivery', 'delivered'])
+}).describe('Assign (or clear) a driver and set the delivery status.')
+
+export const UpdateOrderDeliveryResponse = zod.object({
+  "id": zod.number(),
+  "status": zod.enum(['new', 'preparing', 'ready', 'picked_up']),
+  "fulfillmentType": zod.enum(['pickup', 'delivery']),
+  "pickupName": zod.string(),
+  "note": zod.string().nullish(),
+  "subtotalCents": zod.number(),
+  "pickupEta": zod.coerce.date().nullish(),
+  "scheduledFor": zod.coerce.date().nullish(),
+  "paymentStatus": zod.enum(['pending', 'paid', 'failed']),
+  "createdAt": zod.coerce.date(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "itemId": zod.string(),
+  "name": zod.string(),
+  "unitPriceCents": zod.number(),
+  "qty": zod.number()
+})),
+  "delivery": zod.union([zod.object({
+  "line1": zod.string(),
+  "line2": zod.string().nullish(),
+  "city": zod.string(),
+  "state": zod.string(),
+  "zip": zod.string(),
+  "distanceMeters": zod.number(),
+  "deliveryFeeCents": zod.number(),
+  "deliveryStatus": zod.enum(['unassigned', 'assigned', 'out_for_delivery', 'delivered']),
+  "driverId": zod.number().nullable(),
+  "driverName": zod.string().nullable()
+}).describe('Delivery details attached to a delivery order.'),zod.null()])
 })
 
 
