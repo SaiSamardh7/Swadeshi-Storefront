@@ -169,6 +169,9 @@ importers:
       '@workspace/db':
         specifier: workspace:*
         version: link:../../lib/db
+      '@workspace/delivery':
+        specifier: workspace:*
+        version: link:../../lib/delivery
       '@workspace/menu':
         specifier: workspace:*
         version: link:../../lib/menu
@@ -348,6 +351,8 @@ importers:
       drizzle-kit:
         specifier: ^0.31.10
         version: 0.31.10
+
+  lib/delivery: {}
 
   lib/menu: {}
 
